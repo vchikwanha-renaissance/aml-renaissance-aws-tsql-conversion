@@ -1,0 +1,11 @@
+The following is SQL code that you must convert to PostgreSQL compatible code. The code contains comment blocks that contain T-SQL code:
+{sct_code}
+
+
+The following is an action item that identifies which comment block in the code above you must focus on and provide PostgreSQL 16 compatible code:
+{action_item}
+
+
+You must be very deligent and ensure that you thoroughly analyze the code to understand the intent, logic and flow. Use the ERROR_DESCRIPTION in the action item as a hint for what the code you provide should handle.
+
+Your task is to provide PostgreSQL 16 equivalent code for the T-SQL code in each action item that will later be used to replace the T-SQL comment block in the code. 
