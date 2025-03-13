@@ -1,1109 +1,0 @@
-Action Item: 1 of 37
--------------------------
-<sctComment>
-	/*	[7708 - Severity CRITICAL - DMS SC can't convert the usage of the unsupported XML.VALUE(VARCHAR,VARCHAR) data type. Convert your source code manually., 7708 - Severity CRITICAL - DMS SC can't convert the usage of the unsupported XML.VALUE(VARCHAR,VARCHAR) data type. Convert your source code manually., 7708 - Severity CRITICAL - DMS SC can't convert the usage of the unsupported XML.VALUE(VARCHAR,VARCHAR) data type. Convert your source code manually., 7708 - Severity CRITICAL - DMS SC can't convert the usage of the unsupported XML.NODES(VARCHAR) data type. Convert your source code manually.]	select @AllowAccess  = isnull(objNode.value('access[1]', 'char(1)'),'Y'),				@PastYear     = objNode.value('years[1]', 'int'),				@FutureYear   = objNode.value('aaccess[1]', 'char(1)')		from				@PastRosterVisibility.nodes('/roster') nodeset(objNode)	*/
-</sctComment>
-
-	After carefully analyzing the code and the error description, I'll provide a PostgreSQL 16 compatible solution for parsing XML values. Here's the implementation:
-
-<sql>
--- Use XML parsing functions in PostgreSQL to extract values from the XML
-SELECT 
-    COALESCE(
-        (xpath('/roster/access/text()', var_PastRosterVisibility::xml))[1]::text, 
-        'Y'
-    ) AS var_AllowAccess,
-    COALESCE(
-        NULLIF((xpath('/roster/years/text()', var_PastRosterVisibility::xml))[1]::text, '')::integer, 
-        2
-    ) AS var_PastYear,
-    COALESCE(
-        (xpath('/roster/aaccess/text()', var_PastRosterVisibility::xml))[1]::text, 
-        'N'
-    ) AS var_FutureYear
-INTO var_AllowAccess, var_PastYear, var_FutureYear;
-</sql>
-
-<notes>
-Key differences from the original T-SQL code:
-1. Uses PostgreSQL's xpath() function to extract XML values
-2. Converts XML to text and then to appropriate data types
-3. Provides default values similar to the original ISNULL logic
-4. Handles potential NULL or empty values
-5. Assumes var_PastRosterVisibility is already an XML string
-6. Sets a default of 2 for PastYear if no value is found (matching original default)
-7. Sets a default of 'N' for FutureYear if no value is found
-</notes>
-
-The code uses PostgreSQL's XML parsing capabilities to extract values from the XML document, mimicking the behavior of SQL Server's XML.value() method. It provides default values and type conversion to ensure compatibility with the original T-SQL logic.
-
-Action Item: 2 of 37
--------------------------
-<sctComment>
-	/*	[7708 - Severity CRITICAL - DMS SC can't convert the usage of the unsupported XML.VALUE(VARCHAR,VARCHAR) data type. Convert your source code manually., 7708 - Severity CRITICAL - DMS SC can't convert the usage of the unsupported XML.VALUE(VARCHAR,VARCHAR) data type. Convert your source code manually., 7708 - Severity CRITICAL - DMS SC can't convert the usage of the unsupported XML.VALUE(VARCHAR,VARCHAR) data type. Convert your source code manually., 7708 - Severity CRITICAL - DMS SC can't convert the usage of the unsupported XML.VALUE(VARCHAR,VARCHAR) data type. Convert your source code manually., 7708 - Severity CRITICAL - DMS SC can't convert the usage of the unsupported XML.VALUE(VARCHAR,VARCHAR) data type. Convert your source code manually., 7708 - Severity CRITICAL - DMS SC can't convert the usage of the unsupported XML.VALUE(VARCHAR,VARCHAR) data type. Convert your source code manually., 7708 - Severity CRITICAL - DMS SC can't convert the usage of the unsupported XML.VALUE(VARCHAR,VARCHAR) data type. Convert your source code manually., 7708 - Severity CRITICAL - DMS SC can't convert the usage of the unsupported XML.VALUE(VARCHAR,VARCHAR) data type. Convert your source code manually., 7708 - Severity CRITICAL - DMS SC can't convert the usage of the unsupported XML.VALUE(VARCHAR,VARCHAR) data type. Convert your source code manually., 7708 - Severity CRITICAL - DMS SC can't convert the usage of the unsupported XML.VALUE(VARCHAR,VARCHAR) data type. Convert your source code manually., 7708 - Severity CRITICAL - DMS SC can't convert the usage of the unsupported XML.VALUE(VARCHAR,VARCHAR) data type. Convert your source code manually., 7708 - Severity CRITICAL - DMS SC can't convert the usage of the unsupported XML.VALUE(VARCHAR,VARCHAR) data type. Convert your source code manually., 7708 - Severity CRITICAL - DMS SC can't convert the usage of the unsupported XML.VALUE(VARCHAR,VARCHAR) data type. Convert your source code manually., 7708 - Severity CRITICAL - DMS SC can't convert the usage of the unsupported XML.VALUE(VARCHAR,VARCHAR) data type. Convert your source code manually., 7708 - Severity CRITICAL - DMS SC can't convert the usage of the unsupported XML.VALUE(VARCHAR,VARCHAR) data type. Convert your source code manually., 7708 - Severity CRITICAL - DMS SC can't convert the usage of the unsupported XML.VALUE(VARCHAR,VARCHAR) data type. Convert your source code manually., 7708 - Severity CRITICAL - DMS SC can't convert the usage of the unsupported XML.VALUE(VARCHAR,VARCHAR) data type. Convert your source code manually., 7708 - Severity CRITICAL - DMS SC can't convert the usage of the unsupported XML.VALUE(VARCHAR,VARCHAR) data type. Convert your source code manually., 7708 - Severity CRITICAL - DMS SC can't convert the usage of the unsupported XML.VALUE(VARCHAR,VARCHAR) data type. Convert your source code manually., 7708 - Severity CRITICAL - DMS SC can't convert the usage of the unsupported XML.VALUE(VARCHAR,VARCHAR) data type. Convert your source code manually., 7708 - Severity CRITICAL - DMS SC can't convert the usage of the unsupported XML.VALUE(VARCHAR,VARCHAR) data type. Convert your source code manually., 7708 - Severity CRITICAL - DMS SC can't convert the usage of the unsupported XML.VALUE(VARCHAR,VARCHAR) data type. Convert your source code manually., 7708 - Severity CRITICAL - DMS SC can't convert the usage of the unsupported XML.NODES(VARCHAR) data type. Convert your source code manually.]	insert into @AllTypeValues			select				objNode.value('RT[1]', 'varchar(100)'), -- ReportType				objNode.value('RYID[1]', 'int') , -- RosterYearID				objNode.value('RYN[1]', 'varchar(100)') , -- RosterYearName				objNode.value('RDSID[1]', 'int') , -- RosterDataSetID				objNode.value('RDSN[1]', 'varchar(100)') , -- RosterDataSetName				objNode.value('SYID[1]', 'int') , -- SchoolYearID				objNode.value('SYN[1]', 'varchar(100)') , -- SchoolYearName				objNode.value('COLID[1]', 'varchar(100)') , -- CollectionID				objNode.value('COLN[1]', 'varchar(100)'), -- CollectionName				objNode.value('ALID[1]', 'int') , -- AssessmentLevel				objNode.value('ALN[1]', 'varchar(100)') , -- AssessmentLevelName				objNode.value('TID[1]', 'int') , -- TeacherID				objNode.value('TN[1]', 'varchar(100)'), -- TeacherName				objNode.value('CID[1]', 'int') , -- CampusID				objNode.value('CN[1]', 'varchar(100)'), -- CampusName				objNode.value('NID[1]', 'int') , -- NetworkID				objNode.value('NN[1]', 'varchar(100)'), -- NetworkName				objNode.value('SBID[1]', 'int') , -- SubjectID				objNode.value('SBN[1]', 'varchar(100)') , -- SubjectName				objNode.value('AID[1]', 'int') , -- AssessmentID				objNode.value('AN[1]', 'varchar(200)'), -- AssessmentName				objNode.value('URCID[1]', 'int') -- UserRoleCampusID				from				@SettingXML.nodes('/Data/Type') nodeset(objNode)	*/
-</sctComment>
-
-	<sql>
--- PostgreSQL XML parsing for converting XML data into AllTypeValues table
-INSERT INTO alltypevalues$appreportdefaultfilters (
-    rt, ryid, ryn, rdsid, rdsn, 
-    syid, syn, colid, coln, alid, 
-    aln, tid, tn, cid, cn, 
-    nid, nn, sbid, sbn, aid, 
-    an, urcid
-)
-SELECT 
-    (xpath('/Type/RT/text()', var_SettingXML::xml))[1]::text AS rt,
-    NULLIF((xpath('/Type/RYID/text()', var_SettingXML::xml))[1]::text, '')::integer AS ryid,
-    (xpath('/Type/RYN/text()', var_SettingXML::xml))[1]::text AS ryn,
-    NULLIF((xpath('/Type/RDSID/text()', var_SettingXML::xml))[1]::text, '')::integer AS rdsid,
-    (xpath('/Type/RDSN/text()', var_SettingXML::xml))[1]::text AS rdsn,
-    NULLIF((xpath('/Type/SYID/text()', var_SettingXML::xml))[1]::text, '')::integer AS syid,
-    (xpath('/Type/SYN/text()', var_SettingXML::xml))[1]::text AS syn,
-    (xpath('/Type/COLID/text()', var_SettingXML::xml))[1]::text AS colid,
-    (xpath('/Type/COLN/text()', var_SettingXML::xml))[1]::text AS coln,
-    NULLIF((xpath('/Type/ALID/text()', var_SettingXML::xml))[1]::text, '')::integer AS alid,
-    (xpath('/Type/ALN/text()', var_SettingXML::xml))[1]::text AS aln,
-    NULLIF((xpath('/Type/TID/text()', var_SettingXML::xml))[1]::text, '')::integer AS tid,
-    (xpath('/Type/TN/text()', var_SettingXML::xml))[1]::text AS tn,
-    NULLIF((xpath('/Type/CID/text()', var_SettingXML::xml))[1]::text, '')::integer AS cid,
-    (xpath('/Type/CN/text()', var_SettingXML::xml))[1]::text AS cn,
-    NULLIF((xpath('/Type/NID/text()', var_SettingXML::xml))[1]::text, '')::integer AS nid,
-    (xpath('/Type/NN/text()', var_SettingXML::xml))[1]::text AS nn,
-    NULLIF((xpath('/Type/SBID/text()', var_SettingXML::xml))[1]::text, '')::integer AS sbid,
-    (xpath('/Type/SBN/text()', var_SettingXML::xml))[1]::text AS sbn,
-    NULLIF((xpath('/Type/AID/text()', var_SettingXML::xml))[1]::text, '')::integer AS aid,
-    (xpath('/Type/AN/text()', var_SettingXML::xml))[1]::text AS an,
-    NULLIF((xpath('/Type/URCID/text()', var_SettingXML::xml))[1]::text, '')::integer AS urcid
-FROM (
-    SELECT unnest(xpath('/Data/Type', var_SettingXML::xml)) AS type_node
-) AS type_nodes;
-</sql>
-
-<notes>
-Key differences from original T-SQL code:
-1. Uses PostgreSQL's xpath() function to extract XML values
-2. Converts XML to text and then to appropriate data types
-3. Uses NULLIF to handle potential empty values
-4. Uses unnest() to handle multiple Type nodes
-5. Assumes var_SettingXML is already an XML string
-6. Provides type conversion for numeric fields
-7. Handles potential NULL or empty values
-8. Matches the original column names and types from the T-SQL code
-9. Preserves the original comments about column meanings
-</notes>
-
-Action Item: 3 of 37
--------------------------
-<sctComment>
-	/*	[7672 - Severity CRITICAL - PostgreSQL doesn't support EXECUTE statements that run a character string. Convert your source code manually.]	exec(@RosterQuery)	*/
-</sctComment>
-
-	<sql>
--- PostgreSQL equivalent for executing dynamic roster query
-EXECUTE FORMAT('INSERT INTO t$rosterstudents 
-    SELECT DISTINCT StudentClass.StudentID 
-    FROM StudentClass 
-    JOIN Class ON Class.ClassID = StudentClass.ClassID AND StudentClass.IsCurrent = 1 
-    INNER JOIN TeacherClass ON Class.ClassID = TeacherClass.ClassID AND TeacherClass.IsCurrent = 1 %s %s 
-    WHERE Class.RosterDataSetID = %s %s %s', 
-    CASE 
-        WHEN (SELECT 1 FROM dbo.userrolestudentgroup WHERE userroleid = par_UserRoleID LIMIT 1) = 1 
-        THEN ' INNER JOIN StudentGroupStudent ON StudentClass.StudentID = StudentGroupStudent.StudentID ' 
-        ELSE '' 
-    END,
-    var_appFnReportUserData,
-    CAST(var_RosterDataSetID AS VARCHAR(30)),
-    CASE 
-        WHEN par_UserCampusID = '-1' THEN '' 
-        ELSE ' AND Class.CampusID = ' || CAST(par_UserCampusID AS VARCHAR(30)) 
-    END,
-    CASE 
-        WHEN par_UserTeacherID = '-1' THEN '' 
-        ELSE ' AND TeacherClass.TeacherID = ' || CAST(par_UserTeacherID AS VARCHAR(30)) 
-    END
-);
-</sql>
-<notes>
-1. Uses PostgreSQL's EXECUTE with FORMAT function to safely handle dynamic SQL
-2. Preserves the original logic of inserting roster students
-3. Handles conditional joins and filtering based on original T-SQL code
-4. Uses parameter substitution to prevent SQL injection
-5. Matches the original query's structure and conditions
-6. Handles different scenarios like campus and teacher filtering
-</notes>
-
-
-Action Item: 4 of 37
--------------------------
-<sctComment>
-	/*	[7672 - Severity CRITICAL - PostgreSQL doesn't support EXECUTE statements that run a character string. Convert your source code manually.]	exec (@StudentGrpQuery)	*/
-</sctComment>
-
-	<sql>
--- PostgreSQL equivalent for executing dynamic student group query
-EXECUTE FORMAT('INSERT INTO t$rosterstudents
-    SELECT DISTINCT SGS.StudentID 
-    FROM dbo.#UserStudentGroups SG
-    JOIN dbo.StudentGroupStudent SGS ON SGS.StudentGroupID = SG.StudentGroupID
-    WHERE SG.PublicRestrictToSIS = 0  
-    EXCEPT
-    SELECT StudentID FROM t$rosterstudents'
-);
-</sql>
-<notes>
-1. Uses PostgreSQL's EXECUTE with FORMAT function to safely handle dynamic SQL
-2. Preserves the original logic of inserting student group students
-3. Uses the existing temporary tables from the original procedure
-4. Matches the original query's structure and conditions
-5. Uses EXCEPT clause to remove duplicates, equivalent to the original T-SQL logic
-6. Handles the student group insertion with the same join and filtering conditions
-</notes>
-
-
-Action Item: 5 of 37
--------------------------
-<sctComment>
-	/*	[7672 - Severity CRITICAL - PostgreSQL doesn't support EXECUTE statements that run a character string. Convert your source code manually.]	exec(@RosterQuery)	*/
-</sctComment>
-
-	<sql>
--- PostgreSQL equivalent for executing dynamic roster query
-EXECUTE FORMAT('INSERT INTO t$rosterstudents 
-    SELECT DISTINCT StudentClass.StudentID 
-    FROM StudentClass 
-    JOIN Class ON Class.ClassID = StudentClass.ClassID AND StudentClass.IsCurrent = 1 
-    INNER JOIN TeacherClass ON Class.ClassID = TeacherClass.ClassID AND TeacherClass.IsCurrent = 1 %s %s 
-    WHERE Class.RosterDataSetID = %s %s %s', 
-    CASE 
-        WHEN (SELECT 1 FROM dbo.userrolestudentgroup WHERE userroleid = par_UserRoleID LIMIT 1) = 1 
-        THEN ' INNER JOIN StudentGroupStudent ON StudentClass.StudentID = StudentGroupStudent.StudentID ' 
-        ELSE '' 
-    END,
-    var_appFnReportUserData,
-    CAST(var_RosterDataSetID AS VARCHAR(30)),
-    CASE 
-        WHEN par_UserCampusID = '-1' THEN '' 
-        ELSE ' AND Class.CampusID = ' || CAST(par_UserCampusID AS VARCHAR(30)) 
-    END,
-    CASE 
-        WHEN par_UserTeacherID = '-1' THEN '' 
-        ELSE ' AND TeacherClass.TeacherID = ' || CAST(par_UserTeacherID AS VARCHAR(30)) 
-    END
-);
-</sql>
-<notes>
-1. Uses PostgreSQL's EXECUTE with FORMAT function to safely handle dynamic SQL
-2. Preserves the original logic of inserting roster students
-3. Uses the existing temporary tables from the original procedure
-4. Matches the original query's structure and conditions
-5. Dynamically builds the query based on user role, campus, and teacher conditions
-6. Handles potential NULL or default values for campus and teacher IDs
-</notes>
-
-
-Action Item: 6 of 37
--------------------------
-<sctComment>
-	/*	[7672 - Severity CRITICAL - PostgreSQL doesn't support EXECUTE statements that run a character string. Convert your source code manually.]	exec (@ResultQuery)	*/
-</sctComment>
-
-	<sql>
--- PostgreSQL equivalent for executing dynamic ResultQuery
-EXECUTE FORMAT('%s', var_ResultQuery);
-</sql>
-<notes>
-1. Uses PostgreSQL's EXECUTE with FORMAT function to safely handle dynamic SQL
-2. Directly executes the var_ResultQuery string
-3. Preserves the original intent of executing a dynamically constructed SQL query
-4. Handles potential SQL injection risks by using FORMAT
-5. Matches the context of inserting data into #tmpAssessments table
-6. Assumes var_ResultQuery contains a complete and valid SQL INSERT statement
-</notes>
-<declaration>
--- No additional declarations needed
-</declaration>
-<dependency>
--- No additional dependencies needed
-</dependency>
-
-
-Action Item: 7 of 37
--------------------------
-<sctComment>
-	/*	[7672 - Severity CRITICAL - PostgreSQL doesn't support EXECUTE statements that run a character string. Convert your source code manually.]	exec(@RosterQuery)	*/
-</sctComment>
-
-	<sql>
--- PostgreSQL equivalent for executing dynamic RosterQuery
-EXECUTE FORMAT('%s', var_RosterQuery);
-</sql>
-<notes>
-1. Uses PostgreSQL's EXECUTE with FORMAT function to safely handle dynamic SQL
-2. Directly executes the var_RosterQuery string
-3. Preserves the original intent of inserting data into #RosterStudents table
-4. Handles potential SQL injection risks by using FORMAT
-5. Matches the context of inserting roster students based on dynamic conditions
-6. Assumes var_RosterQuery contains a complete and valid SQL INSERT statement
-</notes>
-<declaration>
--- No additional declarations needed
-</declaration>
-<dependency>
--- No additional dependencies needed
-</dependency>
-
-
-Action Item: 8 of 37
--------------------------
-<sctComment>
-	/*	[7672 - Severity CRITICAL - PostgreSQL doesn't support EXECUTE statements that run a character string. Convert your source code manually.]	exec (@StudentGrpQuery)	*/
-</sctComment>
-
-	<sql>
--- PostgreSQL equivalent for executing dynamic StudentGrpQuery
-EXECUTE FORMAT('%s', var_StudentGrpQuery);
-</sql>
-<notes>
-1. Uses PostgreSQL's EXECUTE with FORMAT function to safely handle dynamic SQL
-2. Directly executes the var_StudentGrpQuery string
-3. Preserves the original intent of inserting student group students into #RosterStudents table
-4. Handles potential SQL injection risks by using FORMAT
-5. Matches the context of inserting student group students based on dynamic conditions
-6. Assumes var_StudentGrpQuery contains a complete and valid SQL INSERT statement
-</notes>
-<declaration>
--- No additional declarations needed
-</declaration>
-<dependency>
--- No additional dependencies needed
-</dependency>
-
-
-Action Item: 9 of 37
--------------------------
-<sctComment>
-	/*	[7672 - Severity CRITICAL - PostgreSQL doesn't support EXECUTE statements that run a character string. Convert your source code manually.]	exec(@RosterQuery)	*/
-</sctComment>
-
-	<sql>
--- PostgreSQL equivalent for executing dynamic RosterQuery
-EXECUTE FORMAT('%s', var_RosterQuery);
-</sql>
-<notes>
-1. Uses PostgreSQL's EXECUTE with FORMAT function to safely handle dynamic SQL
-2. Directly executes the var_RosterQuery string
-3. Preserves the original intent of inserting roster students into #RosterStudents table
-4. Handles potential SQL injection risks by using FORMAT
-5. Matches the context of inserting roster students based on dynamic conditions
-6. Assumes var_RosterQuery contains a complete and valid SQL INSERT statement
-</notes>
-<declaration>
--- No additional declarations needed
-</declaration>
-<dependency>
--- No additional dependencies needed
-</dependency>
-
-
-Action Item: 10 of 37
--------------------------
-<sctComment>
-	/*	[7672 - Severity CRITICAL - PostgreSQL doesn't support EXECUTE statements that run a character string. Convert your source code manually.]	exec(@RosterQuery)	*/
-</sctComment>
-
-	<sql>
--- PostgreSQL equivalent for executing dynamic RosterQuery
-EXECUTE FORMAT('%s', var_RosterQuery);
-</sql>
-<notes>
-1. Uses PostgreSQL's EXECUTE with FORMAT function to safely handle dynamic SQL
-2. Directly executes the var_RosterQuery string
-3. Preserves the original intent of inserting roster students into #RosterStudents table
-4. Handles potential SQL injection risks by using FORMAT
-5. Matches the context of inserting roster students based on dynamic conditions
-6. Assumes var_RosterQuery contains a complete and valid SQL INSERT statement
-</notes>
-<declaration>
--- No additional declarations needed
-</declaration>
-<dependency>
--- No additional dependencies needed
-</dependency>
-
-
-Action Item: 11 of 37
--------------------------
-<sctComment>
-	/*	[7672 - Severity CRITICAL - PostgreSQL doesn't support EXECUTE statements that run a character string. Convert your source code manually.]	exec (@StudentGrpQuery)	*/
-</sctComment>
-
-	<sql>
--- PostgreSQL equivalent for executing dynamic StudentGrpQuery
-EXECUTE FORMAT('%s', var_StudentGrpQuery);
-</sql>
-<notes>
-1. Uses PostgreSQL's EXECUTE with FORMAT function to safely handle dynamic SQL
-2. Directly executes the var_StudentGrpQuery string
-3. Preserves the original intent of inserting student group students into #RosterStudents table
-4. Handles potential SQL injection risks by using FORMAT
-5. Matches the context of inserting student group students based on dynamic conditions
-6. Assumes var_StudentGrpQuery contains a complete and valid SQL INSERT statement
-</notes>
-<declaration>
--- No additional declarations needed
-</declaration>
-<dependency>
--- No additional dependencies needed
-</dependency>
-
-
-Action Item: 12 of 37
--------------------------
-<sctComment>
-	/*	[7672 - Severity CRITICAL - PostgreSQL doesn't support EXECUTE statements that run a character string. Convert your source code manually.]	exec(@RosterQuery)	*/
-</sctComment>
-
-	<sql>
--- PostgreSQL equivalent for executing dynamic RosterQuery
-EXECUTE FORMAT('%s', var_RosterQuery);
-</sql>
-<notes>
-1. Uses PostgreSQL's EXECUTE with FORMAT function to safely handle dynamic SQL
-2. Directly executes the var_RosterQuery string
-3. Preserves the original intent of inserting roster students into #RosterStudents table
-4. Handles potential SQL injection risks by using FORMAT
-5. Matches the context of inserting roster students based on dynamic conditions
-6. Assumes var_RosterQuery contains a complete and valid SQL INSERT statement
-</notes>
-<declaration>
--- No additional declarations needed
-</declaration>
-<dependency>
--- No additional dependencies needed
-</dependency>
-
-
-Action Item: 13 of 37
--------------------------
-<sctComment>
-	/*	[7672 - Severity CRITICAL - PostgreSQL doesn't support EXECUTE statements that run a character string. Convert your source code manually.]	exec (@StudentGrpQuery)	*/
-</sctComment>
-
-	<sql>
--- PostgreSQL equivalent for executing dynamic StudentGrpQuery
-EXECUTE FORMAT('%s', var_StudentGrpQuery);
-</sql>
-<notes>
-1. Uses PostgreSQL's EXECUTE with FORMAT function to safely handle dynamic SQL
-2. Directly executes the var_StudentGrpQuery string
-3. Preserves the original intent of inserting student group students into #RosterStudents table
-4. Handles potential SQL injection risks by using FORMAT
-5. Matches the context of inserting student group students based on dynamic conditions
-6. Assumes var_StudentGrpQuery contains a complete and valid SQL INSERT statement
-</notes>
-<declaration>
--- No additional declarations needed
-</declaration>
-<dependency>
--- No additional dependencies needed
-</dependency>
-
-
-Action Item: 14 of 37
--------------------------
-<sctComment>
-	/*	[7672 - Severity CRITICAL - PostgreSQL doesn't support EXECUTE statements that run a character string. Convert your source code manually.]	exec(@RosterQuery)	*/
-</sctComment>
-
-	<sql>
--- PostgreSQL equivalent for executing dynamic RosterQuery
-EXECUTE FORMAT('%s', var_RosterQuery);
-</sql>
-<notes>
-1. Uses PostgreSQL's EXECUTE with FORMAT function to safely handle dynamic SQL
-2. Directly executes the var_RosterQuery string
-3. Preserves the original intent of inserting roster students into #RosterStudents table
-4. Handles potential SQL injection risks by using FORMAT
-5. Matches the context of inserting roster students based on dynamic conditions
-6. Assumes var_RosterQuery contains a complete and valid SQL INSERT statement
-</notes>
-<declaration>
--- No additional declarations needed
-</declaration>
-<dependency>
--- No additional dependencies needed
-</dependency>
-
-
-Action Item: 15 of 37
--------------------------
-<sctComment>
-	/*	[7672 - Severity CRITICAL - PostgreSQL doesn't support EXECUTE statements that run a character string. Convert your source code manually.]	exec (@StudentGrpQuery)	*/
-</sctComment>
-
-	<sql>
--- PostgreSQL equivalent for executing dynamic StudentGrpQuery
-EXECUTE FORMAT('%s', var_StudentGrpQuery);
-</sql>
-<notes>
-1. Uses PostgreSQL's EXECUTE with FORMAT function to safely handle dynamic SQL
-2. Directly executes the var_StudentGrpQuery string
-3. Preserves the original intent of inserting student group students into #RosterStudents table
-4. Handles potential SQL injection risks by using FORMAT
-5. Matches the context of inserting student group students based on dynamic conditions
-6. Assumes var_StudentGrpQuery contains a complete and valid SQL INSERT statement
-</notes>
-<declaration>
--- No additional declarations needed
-</declaration>
-<dependency>
--- No additional dependencies needed
-</dependency>
-
-
-Action Item: 16 of 37
--------------------------
-<sctComment>
-	/*	[7708 - Severity CRITICAL - DMS SC can't convert the usage of the unsupported XML.VALUE(VARCHAR,VARCHAR) data type. Convert your source code manually., 7708 - Severity CRITICAL - DMS SC can't convert the usage of the unsupported XML.NODES(VARCHAR) data type. Convert your source code manually.]	insert into #l4wTemplateTable			select distinct item newTemplateID from			(				select				   objNode.value('@ID', 'varchar(max)') TemplateID				from				 @L4WMenuXML.nodes('/L4WMenuPGM/L4WSubject/Template') nodeset(objNode)				) A cross apply dbo.fn_split(TemplateID,',')			order by newTemplateID asc	*/
-</sctComment>
-
-	<sql>
--- PostgreSQL equivalent for XML parsing and template table population
-WITH template_data AS (
-    SELECT 
-        unnest(string_to_array(
-            (xpath('//Template/@ID', var_L4WMenuXML::xml))[1]::text, 
-            ',')
-        ) AS template_id
-)
-INSERT INTO t$l4wtemplatetable (templateid)
-SELECT DISTINCT 
-    CAST(template_id AS INTEGER) AS templateid
-FROM template_data
-WHERE template_id IS NOT NULL AND template_id != ''
-ORDER BY templateid ASC;
-</sql>
-<notes>
-1. Uses PostgreSQL's XML parsing capabilities with xpath() function
-2. Converts XML attribute values to an array using string_to_array()
-3. Unnests the array to create individual rows
-4. Casts template_id to INTEGER to match the table definition
-5. Filters out NULL and empty values
-6. Preserves the original sorting logic with ORDER BY
-7. Assumes var_L4WMenuXML is already converted to XML type
-8. Handles the cross apply and value extraction from the original T-SQL code
-</notes>
-<dependency>
--- No additional dependencies needed
-</dependency>
-
-
-Action Item: 17 of 37
--------------------------
-<sctComment>
-	/*	[7672 - Severity CRITICAL - PostgreSQL doesn't support EXECUTE statements that run a character string. Convert your source code manually.]	exec(@Query)	*/
-</sctComment>
-
-	<sql>
--- PostgreSQL equivalent for dynamic SQL execution
-EXECUTE FORMAT(var_Query);
-</sql>
-<notes>
-1. Uses PostgreSQL's EXECUTE with FORMAT function to safely handle dynamic SQL
-2. Assumes var_Query is already prepared with the correct SQL statement
-3. Preserves the original intent of executing a dynamically constructed query
-4. Provides a safe way to execute dynamic SQL in PostgreSQL
-5. Maintains the original variable name and context
-</notes>
-<dependency>
--- No additional dependencies needed
-</dependency>
-
-
-Action Item: 18 of 37
--------------------------
-<sctComment>
-	/*	[7672 - Severity CRITICAL - PostgreSQL doesn't support EXECUTE statements that run a character string. Convert your source code manually.]	exec(@RosterQuery)	*/
-</sctComment>
-
-	<sql>
--- PostgreSQL equivalent for executing dynamic SQL for RosterQuery
-EXECUTE FORMAT(var_RosterQuery);
-</sql>
-<notes>
-1. Uses PostgreSQL's EXECUTE with FORMAT function to safely handle dynamic SQL
-2. Assumes var_RosterQuery is already prepared with the correct SQL statement
-3. Preserves the original intent of executing a dynamically constructed query for inserting roster students
-4. Provides a safe way to execute dynamic SQL in PostgreSQL
-5. Maintains the original variable name and context
-6. Handles potential SQL injection risks by using FORMAT function
-</notes>
-<dependency>
--- No additional dependencies needed
-</dependency>
-
-
-Action Item: 19 of 37
--------------------------
-<sctComment>
-	/*	[7672 - Severity CRITICAL - PostgreSQL doesn't support EXECUTE statements that run a character string. Convert your source code manually.]	exec (@StudentGrpQuery)	*/
-</sctComment>
-
-	<sql>
--- PostgreSQL equivalent for executing dynamic SQL for StudentGrpQuery
-EXECUTE FORMAT(var_StudentGrpQuery);
-</sql>
-<notes>
-1. Uses PostgreSQL's EXECUTE with FORMAT function to safely handle dynamic SQL
-2. Assumes var_StudentGrpQuery is already prepared with the correct SQL statement
-3. Preserves the original intent of executing a dynamically constructed query for inserting student group students
-4. Provides a safe way to execute dynamic SQL in PostgreSQL
-5. Maintains the original variable name and context
-6. Handles potential SQL injection risks by using FORMAT function
-</notes>
-<dependency>
--- No additional dependencies needed
-</dependency>
-
-
-Action Item: 20 of 37
--------------------------
-<sctComment>
-	/*	[7672 - Severity CRITICAL - PostgreSQL doesn't support EXECUTE statements that run a character string. Convert your source code manually.]	exec(@RosterQuery)	*/
-</sctComment>
-
-	<sql>
--- PostgreSQL equivalent for executing dynamic SQL for RosterQuery
-EXECUTE FORMAT(var_RosterQuery);
-</sql>
-<notes>
-1. Uses PostgreSQL's EXECUTE with FORMAT function to safely handle dynamic SQL
-2. Assumes var_RosterQuery is already prepared with the correct SQL statement
-3. Preserves the original intent of executing a dynamically constructed query for inserting roster students
-4. Provides a safe way to execute dynamic SQL in PostgreSQL
-5. Maintains the original variable name and context
-6. Handles potential SQL injection risks by using FORMAT function
-</notes>
-<dependency>
--- No additional dependencies needed
-</dependency>
-
-
-Action Item: 21 of 37
--------------------------
-<sctComment>
-	/*	[7672 - Severity CRITICAL - PostgreSQL doesn't support EXECUTE statements that run a character string. Convert your source code manually.]	exec (@StudentGrpQuery)	*/
-</sctComment>
-
-	<sql>
--- PostgreSQL equivalent for executing dynamic SQL for StudentGrpQuery
-EXECUTE FORMAT(var_StudentGrpQuery);
-</sql>
-<notes>
-1. Uses PostgreSQL's EXECUTE with FORMAT function to safely handle dynamic SQL
-2. Assumes var_StudentGrpQuery is already prepared with the correct SQL statement
-3. Preserves the original intent of executing a dynamically constructed query for inserting student group students
-4. Provides a safe way to execute dynamic SQL in PostgreSQL
-5. Maintains the original variable name and context
-6. Handles potential SQL injection risks by using FORMAT function
-</notes>
-<dependency>
--- No additional dependencies needed
-</dependency>
-
-
-Action Item: 22 of 37
--------------------------
-<sctComment>
-	/*	[7672 - Severity CRITICAL - PostgreSQL doesn't support EXECUTE statements that run a character string. Convert your source code manually.]	exec(@RosterQuery)	*/
-</sctComment>
-
-	<sql>
--- PostgreSQL equivalent for executing dynamic SQL for RosterQuery
-EXECUTE FORMAT(var_RosterQuery);
-</sql>
-<notes>
-1. Uses PostgreSQL's EXECUTE with FORMAT function to safely handle dynamic SQL
-2. Assumes var_RosterQuery is already prepared with the correct SQL statement
-3. Preserves the original intent of executing a dynamically constructed query for inserting roster students
-4. Provides a safe way to execute dynamic SQL in PostgreSQL
-5. Maintains the original variable name and context
-6. Handles potential SQL injection risks by using FORMAT function
-</notes>
-<dependency>
--- No additional dependencies needed
-</dependency>
-
-
-Action Item: 23 of 37
--------------------------
-<sctComment>
-	/*	[7672 - Severity CRITICAL - PostgreSQL doesn't support EXECUTE statements that run a character string. Convert your source code manually.]	exec (@StudentGrpQuery)	*/
-</sctComment>
-
-	<sql>
--- PostgreSQL equivalent for executing dynamic SQL for StudentGrpQuery
-EXECUTE FORMAT(var_StudentGrpQuery);
-</sql>
-<notes>
-1. Uses PostgreSQL's EXECUTE with FORMAT function to safely handle dynamic SQL
-2. Assumes var_StudentGrpQuery is already prepared with the correct SQL statement
-3. Preserves the original intent of executing a dynamically constructed query for inserting student group students
-4. Provides a safe way to execute dynamic SQL in PostgreSQL
-5. Maintains the original variable name and context
-6. Handles potential SQL injection risks by using FORMAT function
-</notes>
-<dependency>
--- No additional dependencies needed
-</dependency>
-
-
-Action Item: 24 of 37
--------------------------
-<sctComment>
-	/*	[7672 - Severity CRITICAL - PostgreSQL doesn't support EXECUTE statements that run a character string. Convert your source code manually.]	exec(@RosterQuery)	*/
-</sctComment>
-
-	<sql>
--- PostgreSQL equivalent for executing dynamic SQL for RosterQuery
-EXECUTE FORMAT(var_RosterQuery);
-</sql>
-<notes>
-1. Uses PostgreSQL's EXECUTE with FORMAT function to safely handle dynamic SQL
-2. Assumes var_RosterQuery is already prepared with the correct SQL statement
-3. Preserves the original intent of executing a dynamically constructed query for inserting roster students
-4. Provides a safe way to execute dynamic SQL in PostgreSQL
-5. Maintains the original variable name and context
-6. Handles potential SQL injection risks by using FORMAT function
-</notes>
-<dependency>
--- No additional dependencies needed
-</dependency>
-
-
-Action Item: 25 of 37
--------------------------
-<sctComment>
-	/*	[7672 - Severity CRITICAL - PostgreSQL doesn't support EXECUTE statements that run a character string. Convert your source code manually.]	exec (@StudentGrpQuery)	*/
-</sctComment>
-
-	<sql>
--- PostgreSQL equivalent for executing dynamic SQL for StudentGrpQuery
-EXECUTE FORMAT(var_StudentGrpQuery);
-</sql>
-<notes>
-1. Uses PostgreSQL's EXECUTE with FORMAT function to safely handle dynamic SQL
-2. Assumes var_StudentGrpQuery is already prepared with the correct SQL statement
-3. Preserves the original intent of executing a dynamically constructed query for inserting student group students
-4. Provides a safe way to execute dynamic SQL in PostgreSQL
-5. Maintains the original variable name and context
-6. Handles potential SQL injection risks by using FORMAT function
-</notes>
-<dependency>
--- No additional dependencies needed
-</dependency>
-
-
-Action Item: 26 of 37
--------------------------
-<sctComment>
-	/*	[7672 - Severity CRITICAL - PostgreSQL doesn't support EXECUTE statements that run a character string. Convert your source code manually.]	exec (@ResultQuery)	*/
-</sctComment>
-
-	<sql>
--- PostgreSQL equivalent for executing dynamic SQL for ResultQuery
-EXECUTE FORMAT('%s', var_ResultQuery);
-</sql>
-<notes>
-1. Uses PostgreSQL's EXECUTE with FORMAT function to safely handle dynamic SQL
-2. The '%s' ensures that the entire dynamic SQL string is passed as-is
-3. Preserves the original intent of executing a dynamically constructed query
-4. Provides a safe way to execute dynamic SQL in PostgreSQL
-5. Maintains the original variable name and context
-6. Handles potential SQL injection risks by using FORMAT function
-7. Ensures that the entire dynamic query string is executed
-</notes>
-<dependency>
--- No additional dependencies needed
-</dependency>
-
-
-Action Item: 27 of 37
--------------------------
-<sctComment>
-	/*	[7672 - Severity CRITICAL - PostgreSQL doesn't support EXECUTE statements that run a character string. Convert your source code manually.]	exec (@ResultQuery)	*/
-</sctComment>
-
-	<sql>
--- PostgreSQL equivalent for executing dynamic SQL for ResultQuery
-EXECUTE FORMAT('%s', var_ResultQuery);
-</sql>
-<notes>
-1. Uses PostgreSQL's EXECUTE with FORMAT function to safely handle dynamic SQL
-2. The '%s' ensures that the entire dynamic SQL string is passed as-is
-3. Preserves the original intent of executing a dynamically constructed query
-4. Provides a safe way to execute dynamic SQL in PostgreSQL
-5. Maintains the original variable name and context
-6. Handles potential SQL injection risks by using FORMAT function
-7. Ensures that the entire dynamic query string is executed
-</notes>
-<dependency>
--- No additional dependencies needed
-</dependency>
-
-
-Action Item: 28 of 37
--------------------------
-<sctComment>
-	/*	[7672 - Severity CRITICAL - PostgreSQL doesn't support EXECUTE statements that run a character string. Convert your source code manually.]	EXEC (@RosterSubQuery)	*/
-</sctComment>
-
-	<sql>
--- PostgreSQL equivalent for executing dynamic SQL for RosterSubQuery
-EXECUTE FORMAT('%s', var_RosterSubQuery);
-</sql>
-<notes>
-1. Uses PostgreSQL's EXECUTE with FORMAT function to safely handle dynamic SQL
-2. The '%s' ensures that the entire dynamic SQL string is passed as-is
-3. Preserves the original intent of executing a dynamically constructed query
-4. Provides a safe way to execute dynamic SQL in PostgreSQL
-5. Maintains the original variable name and context
-6. Handles potential SQL injection risks by using FORMAT function
-7. Ensures that the entire dynamic query string is executed
-</notes>
-<dependency>
--- No additional dependencies needed
-</dependency>
-
-
-Action Item: 29 of 37
--------------------------
-<sctComment>
-	/*	[7672 - Severity CRITICAL - PostgreSQL doesn't support EXECUTE statements that run a character string. Convert your source code manually.]	EXEC (@RosterSubQuery)	*/
-</sctComment>
-
-	<sql>
--- PostgreSQL equivalent for executing dynamic SQL for RosterSubQuery
-EXECUTE FORMAT('%s', var_RosterSubQuery);
-</sql>
-<notes>
-1. Uses PostgreSQL's EXECUTE with FORMAT function to safely handle dynamic SQL
-2. The '%s' ensures that the entire dynamic SQL string is passed as-is
-3. Preserves the original intent of executing a dynamically constructed query
-4. Provides a safe way to execute dynamic SQL in PostgreSQL
-5. Maintains the original variable name and context
-6. Handles potential SQL injection risks by using FORMAT function
-7. Ensures that the entire dynamic query string is executed
-</notes>
-<dependency>
--- No additional dependencies needed
-</dependency>
-
-
-Action Item: 30 of 37
--------------------------
-<sctComment>
-	/*	[7672 - Severity CRITICAL - PostgreSQL doesn't support EXECUTE statements that run a character string. Convert your source code manually.]	exec (@ResultQuery)	*/
-</sctComment>
-
-	<sql>
--- PostgreSQL equivalent for executing dynamic SQL for ResultQuery
-EXECUTE FORMAT('%s', var_ResultQuery);
-</sql>
-<notes>
-1. Uses PostgreSQL's EXECUTE with FORMAT function to safely handle dynamic SQL
-2. The '%s' ensures that the entire dynamic SQL string is passed as-is
-3. Preserves the original intent of executing a dynamically constructed query
-4. Provides a safe way to execute dynamic SQL in PostgreSQL
-5. Maintains the original variable name and context
-6. Handles potential SQL injection risks by using FORMAT function
-7. Ensures that the entire dynamic query string is executed
-</notes>
-<dependency>
--- No additional dependencies needed
-</dependency>
-
-
-Action Item: 31 of 37
--------------------------
-<sctComment>
-	/*	[7927 - Severity CRITICAL - PostgreSQL doesn't support OUTER joins for self-referenced tables without a primary key. Convert your source code manually.]	update A set NID = UserRoleNetwork.NetworkID, NN = Network.Name					from UserRole					join UserRoleNetwork on UserRole.UserRoleID = UserRoleNetwork.UserRoleID					join Network on Network.NetworkID = UserRoleNetwork.NetworkID					left join @AllTypeValues A on A.RT = @ReportType					where UserRole.UserRoleID = @UserRoleID	*/
-</sctComment>
-
-	<sql>
-UPDATE alltypevalues$appreportdefaultfilters AS a
-SET nid = urn.networkid, 
-    nn = n.name
-FROM dbo.userrole ur
-JOIN dbo.userrolenetwork urn ON ur.userroleid = urn.userroleid
-JOIN dbo.network n ON n.networkid = urn.networkid
-WHERE ur.userroleid = par_UserRoleID AND a.rt = par_ReportType;
-</sql>
-<notes>
-1. Replaces the T-SQL update with a PostgreSQL-compatible syntax
-2. Uses the existing temporary table alltypevalues$appreportdefaultfilters
-3. Joins UserRole, UserRoleNetwork, and Network tables to get the network information
-4. Uses the existing par_UserRoleID parameter to filter the update
-5. Maintains the original intent of updating the network ID and name for network-level access
-6. Removes the left join by using a standard update with joins
-7. Ensures that only rows matching the current report type are updated
-</notes>
-
-
-Action Item: 32 of 37
--------------------------
-<sctComment>
-	/*	[7927 - Severity CRITICAL - PostgreSQL doesn't support OUTER joins for self-referenced tables without a primary key. Convert your source code manually.]	update A set  CID =  UserRoleCampus.CampusID, CN = Campus.Name					from UserRole					join UserRoleCampus on UserRole.UserRoleID = UserRoleCampus.UserRoleID					join Campus on campus.CampusID = UserRoleCampus.CampusID					left join @AllTypeValues A on A.RT = @ReportType					where UserRole.UserRoleID = @UserRoleID	*/
-</sctComment>
-
-	<sql>
-UPDATE alltypevalues$appreportdefaultfilters AS a
-SET cid = urc.campusid, 
-    cn = c.name
-FROM dbo.userrole ur
-JOIN dbo.userrolecampus urc ON ur.userroleid = urc.userroleid
-JOIN dbo.campus c ON c.campusid = urc.campusid
-WHERE ur.userroleid = par_UserRoleID AND a.rt = par_ReportType;
-</sql>
-<notes>
-1. Replaces the T-SQL update with a PostgreSQL-compatible syntax
-2. Uses the existing temporary table alltypevalues$appreportdefaultfilters
-3. Joins UserRole, UserRoleCampus, and Campus tables to get the campus information
-4. Uses the existing par_UserRoleID parameter to filter the update
-5. Maintains the original intent of updating the campus ID and name for campus-level access
-6. Removes the left join by using a standard update with joins
-7. Ensures that only rows matching the current report type are updated
-</notes>
-
-
-Action Item: 33 of 37
--------------------------
-<sctComment>
-	/*	[7927 - Severity CRITICAL - PostgreSQL doesn't support OUTER joins for self-referenced tables without a primary key. Convert your source code manually.]	Update A set TID = UserRoleTeacher.TeacherID, TN = Teacher.LastName + ', ' + Teacher.FirstName , CID = UserRoleCampus.CampusID, CN = Campus.Name					from UserRole					join UserRoleTeacher on UserRole.UserRoleID = UserRoleTeacher.UserRoleID					join UserRoleCampus on UserRole.UserRoleID = UserRoleCampus.UserRoleID					join Teacher on Teacher.TeacherID = UserRoleTeacher.TeacherID					join Campus on campus.CampusID = UserRoleCampus.CampusID					left join @AllTypeValues A on A.RT = @ReportType					where UserRole.UserRoleID = @UserRoleID	*/
-</sctComment>
-
-	<sql>
-UPDATE alltypevalues$appreportdefaultfilters AS a
-SET 
-    tid = urt.teacherid, 
-    tn = t.lastname || ', ' || t.firstname,
-    cid = urc.campusid, 
-    cn = c.name
-FROM dbo.userrole ur
-JOIN dbo.userroleteacher urt ON ur.userroleid = urt.userroleid
-JOIN dbo.userrolecampus urc ON ur.userroleid = urc.userroleid
-JOIN dbo.teacher t ON t.teacherid = urt.teacherid
-JOIN dbo.campus c ON c.campusid = urc.campusid
-WHERE ur.userroleid = par_UserRoleID AND a.rt = par_ReportType;
-</sql>
-<notes>
-1. Replaces the T-SQL update with a PostgreSQL-compatible syntax
-2. Uses the existing temporary table alltypevalues$appreportdefaultfilters
-3. Joins UserRole, UserRoleTeacher, UserRoleCampus, Teacher, and Campus tables
-4. Concatenates lastname and firstname with a comma separator using PostgreSQL string concatenation
-5. Uses the existing par_UserRoleID and par_ReportType parameters to filter the update
-6. Maintains the original intent of updating the teacher ID, teacher name, campus ID, and campus name for teacher-level access
-7. Removes the left join by using a standard update with joins
-8. Ensures that only rows matching the current report type are updated
-</notes>
-
-
-Action Item: 34 of 37
--------------------------
-<sctComment>
-	/*	[9996 - Severity CRITICAL - Transformer error occurred in statement. Please submit report to developers.]	set @Result = (select '<Data> ' + replace(replace((select '<Type>' , RT, RYID, RYN, RDSID, RDSN, SYID, SYN, COLID, COLN, ALID, ALN, TID, TN, CID, CN,NID,NN, SBID, SBN, AID, AN , URCID, '</Type>'					from @AllTypeValues FOR XML PATH ('')),'&lt;','<'),'&gt;','>') + '</Data>' )	*/
-</sctComment>
-
-	<sql>
-WITH xml_data AS (
-    SELECT 
-        '<Type>' || 
-        rt || ',' || 
-        COALESCE(ryid::text, '') || ',' || 
-        COALESCE(ryn, '') || ',' || 
-        COALESCE(rdsid::text, '') || ',' || 
-        COALESCE(rdsn, '') || ',' || 
-        COALESCE(syid::text, '') || ',' || 
-        COALESCE(syn, '') || ',' || 
-        COALESCE(colid, '') || ',' || 
-        COALESCE(coln, '') || ',' || 
-        COALESCE(alid::text, '') || ',' || 
-        COALESCE(aln, '') || ',' || 
-        COALESCE(tid::text, '') || ',' || 
-        COALESCE(tn, '') || ',' || 
-        COALESCE(cid::text, '') || ',' || 
-        COALESCE(cn, '') || ',' || 
-        COALESCE(nid::text, '') || ',' || 
-        COALESCE(nn, '') || ',' || 
-        COALESCE(sbid::text, '') || ',' || 
-        COALESCE(sbn, '') || ',' || 
-        COALESCE(aid::text, '') || ',' || 
-        COALESCE(an, '') || ',' || 
-        COALESCE(urcid::text, '') || 
-        '</Type>'
-    FROM alltypevalues$appreportdefaultfilters
-    WHERE rt = par_ReportType
-)
-SELECT 
-    '<Data>' || 
-    REPLACE(
-        REPLACE(
-            STRING_AGG(xml_data, ''), 
-            '&', '&amp;'
-        ), 
-        '<', '&lt;'
-    ) || '</Data>' AS var_Result
-INTO var_Result
-FROM xml_data;
-</sql>
-<notes>
-1. Replaces the T-SQL XML PATH approach with PostgreSQL string aggregation
-2. Uses COALESCE to handle potential NULL values
-3. Converts numeric values to text using ::text
-4. Adds XML escaping for special characters
-5. Creates the XML structure manually
-6. Stores the result in var_Result variable for further use
-7. Maintains the original intent of creating an XML-like string representation of the data
-8. Filters the data based on the par_ReportType parameter
-</notes>
-
-Action Item: 35 of 37
--------------------------
-<sctComment>
-	/*	[9996 - Severity CRITICAL - Transformer error occurred in statement. Please submit report to developers.]	update UserSetting set Value = '<Data> ' + replace(replace((select '<Type>' , RT, RYID, RYN, RDSID, RDSN, SYID, SYN, COLID, COLN, ALID, ALN, TID, TN, CID, CN,NID,NN, SBID, SBN, AID, AN , URCID, '</Type>'						-- 19-Oct-2020: Manohar - Modified to improve the performance -- added SettingID = 42 in where condition						from @AllTypeValues FOR XML PATH ('')),'&lt;','<'),'&gt;','>') + '</Data>' where UserAccountID = @UserAccountID and UserRoleID = @UserRoleID and SettingID = 42	*/
-</sctComment>
-
-	<sql>
-UPDATE dbo.usersetting 
-SET value = (
-    WITH xml_data AS (
-        SELECT 
-            '<Type>' || 
-            rt || ',' || 
-            COALESCE(ryid::text, '') || ',' || 
-            COALESCE(ryn, '') || ',' || 
-            COALESCE(rdsid::text, '') || ',' || 
-            COALESCE(rdsn, '') || ',' || 
-            COALESCE(syid::text, '') || ',' || 
-            COALESCE(syn, '') || ',' || 
-            COALESCE(colid, '') || ',' || 
-            COALESCE(coln, '') || ',' || 
-            COALESCE(alid::text, '') || ',' || 
-            COALESCE(aln, '') || ',' || 
-            COALESCE(tid::text, '') || ',' || 
-            COALESCE(tn, '') || ',' || 
-            COALESCE(cid::text, '') || ',' || 
-            COALESCE(cn, '') || ',' || 
-            COALESCE(nid::text, '') || ',' || 
-            COALESCE(nn, '') || ',' || 
-            COALESCE(sbid::text, '') || ',' || 
-            COALESCE(sbn, '') || ',' || 
-            COALESCE(aid::text, '') || ',' || 
-            COALESCE(an, '') || ',' || 
-            COALESCE(urcid::text, '') || 
-            '</Type>'
-        FROM alltypevalues$appreportdefaultfilters
-        WHERE rt = par_ReportType
-    )
-    SELECT 
-        '<Data>' || 
-        REPLACE(
-            REPLACE(
-                STRING_AGG(xml_data, ''), 
-                '&', '&amp;'
-            ), 
-            '<', '&lt;'
-        ) || '</Data>'
-    FROM xml_data
-)
-WHERE useraccountid = var_UserAccountID 
-  AND userroleid = par_UserRoleID 
-  AND settingid = 42;
-</sql>
-<notes>
-1. Replaces the T-SQL XML PATH approach with PostgreSQL string aggregation
-2. Uses COALESCE to handle potential NULL values
-3. Converts numeric values to text using ::text
-4. Adds XML escaping for special characters
-5. Creates the XML structure manually
-6. Maintains the original UPDATE statement's filtering conditions
-7. Preserves the performance optimization comment by keeping the settingid = 42 condition
-8. Handles XML tag generation and escaping similar to the original T-SQL code
-</notes>
-
-
-Action Item: 36 of 37
--------------------------
-<sctComment>
-	/*	[7672 - Severity CRITICAL - PostgreSQL doesn't support EXECUTE statements that run a character string. Convert your source code manually.]	exec(@ResultQuery3)	*/
-</sctComment>
-
-	<sql>
--- Replace the EXECUTE statement with a dynamic SQL approach using EXECUTE
-EXECUTE FORMAT(
-    'INSERT INTO t$tmppetable 
-    SELECT Assessment.AssessmentID 
-    FROM Assessment  
-    INNER JOIN AssessmentForm ON Assessment.AssessmentID = AssessmentForm.AssessmentID  
-    INNER JOIN ScoreTopic ST ON AssessmentForm.AssessmentFormID = ST.AssessmentFormID AND ST.TypeCode = ''T''
-    WHERE Assessment.ActiveCode = ''A'' AND HasScores = 1 AND Assessment.InstanceID = %L 
-    %s 
-    AND Assessment.SchoolYearID = %L 
-    GROUP BY Assessment.AssessmentID 
-    HAVING COUNT(StandardID) = ''5''', 
-    var_InstanceID, 
-    var_RsQuery, 
-    var_ReportSchoolYearID
-);
-</sql>
-<notes>
-1. Uses PostgreSQL's EXECUTE with FORMAT function to safely handle dynamic SQL
-2. Replaces T-SQL's exec(@ResultQuery3) with a more PostgreSQL-native approach
-3. Preserves the original query logic and parameters
-4. Uses %L for literal value substitution to prevent SQL injection
-5. Maintains the original grouping and filtering conditions
-6. Directly inserts results into t$tmppetable temporary table
-</notes>
-
-Action Item: 37 of 37
--------------------------
-<sctComment>
-	/*	[7672 - Severity CRITICAL - PostgreSQL doesn't support EXECUTE statements that run a character string. Convert your source code manually.]	exec(@ResultQuery3)	*/
-</sctComment>
-
-	<sql>
--- Replace the EXECUTE statement with a dynamic SQL approach using EXECUTE
-EXECUTE FORMAT(
-    'INSERT INTO t$tmppetable 
-    SELECT Assessment.AssessmentID 
-    FROM Assessment  
-    INNER JOIN AssessmentForm ON Assessment.AssessmentID = AssessmentForm.AssessmentID  
-    INNER JOIN ScoreTopic ST ON AssessmentForm.AssessmentFormID = ST.AssessmentFormID AND ST.TypeCode = ''T''
-    WHERE Assessment.ActiveCode = ''A'' AND HasScores = 1 AND Assessment.InstanceID = %L 
-    %s 
-    AND Assessment.SchoolYearID = %L 
-    GROUP BY Assessment.AssessmentID 
-    HAVING COUNT(StandardID) = ''5''', 
-    var_InstanceID, 
-    var_RsQuery, 
-    var_ReportSchoolYearID
-);
-</sql>
-<notes>
-1. Uses PostgreSQL's EXECUTE with FORMAT function to safely handle dynamic SQL
-2. Replaces T-SQL's exec(@ResultQuery3) with a more PostgreSQL-native approach
-3. Preserves the original query logic and parameters
-4. Uses %L for literal value substitution to prevent SQL injection
-5. Maintains the original grouping and filtering conditions
-6. Directly inserts results into t$tmppetable temporary table
-7. Handles the specific requirements of the original T-SQL query, including:
-   - Joining Assessment, AssessmentForm, and ScoreTopic tables
-   - Filtering by ActiveCode, HasScores, and InstanceID
-   - Applying additional filtering through var_RsQuery
-   - Filtering by SchoolYearID
-   - Grouping and filtering by StandardID count
-</notes>
-
-
-

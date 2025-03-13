@@ -1,0 +1,16 @@
+The following is the AWS SCT converted code:
+        {sct_code}
+
+
+        The following is the action item list:
+        {action_items}
+
+
+        The following is the original T-SQL code:
+        {original_code}
+        
+        
+        1. Please complete the AWS SCT code conversion from T-SQL to PostgreSQL 16. 
+        2. Implement EVERY action item listed in the action items list and apply the changes to the AWS SCT code. 
+        3. Compare the modified and completed AWS SCT code to the original T-SQL code and ensure that their logic, intent and functionality are equivalent
+        4. Respond with the correct and complete PostgreSQL code
