@@ -22,6 +22,7 @@ To begin, you MUST:
 - Use the action item you are given to identify the comment block that will converting from T-SQL to PostgreSQL.
 - Understand the code blocks before and after the comment block to obtain the full context and intent of the T-SQL code that you are converting
 - Provide the full and complete PostgreSQL 16 compatible code in the following format <sql></sql>
+- The code you provide should be functional, efficient, and adhere to best practices
 - Provide code for user defined functions referenced in the following format: <dependency></dependency>
 - Ensure that a cursor variable is available for all the EXECUTE statements that return a result set.
 - Assess if dynamic queries generate a result set that is returned as output. If you determine that the dynamic query returns a result set as output, you must verify that an output parameter or refcursor exists in the code. If you determine that an output refcursor does not exist for the dynamic query provide the definition for the refcursor or output parameter in the following format <declaration></declaration>
@@ -35,4 +36,3 @@ Your response must be in the following format:
 
 
 YOU MUST ONLY PROVIDE EXECUTABLE SQL IN THE <sql>, <declaration>, <dependency> TAGS!
-

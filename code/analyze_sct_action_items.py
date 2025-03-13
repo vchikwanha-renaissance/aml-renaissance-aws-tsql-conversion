@@ -11,8 +11,8 @@ logger = logging.getLogger(__name__)
 
 bucket_name = "aml-renaissance-aws-tsql-conversion"
 file_key = "aws-sct/databases/stars_prod_ci_migration/stored-procedures/appreportdefaultfilters.sql"
-agent_id = "YEZTAMGSYI"
-agent_alias_id = "KTSYISDRJX"
+agent_id = "XQSDB40KCL"
+agent_alias_id = "B3KCGDXLCK"
 
 
 s3_client = boto3.client('s3')
