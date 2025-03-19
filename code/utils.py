@@ -133,7 +133,7 @@ def replace_sct_comments(sct_code, llm_response):
         # Handle new line characters so that the replacement SQL is not all on one line
         #pg_sql = pg_sql.replace("\n", "\n\r")
 
-        pg_sql = f"""/* Gen AI converted code below */ {pg_sql}"""
+        pg_sql = f"""/* GENERATIVE AI CODE BELOW */ {pg_sql}"""
 
         # Replace SCT comment with PostgreSQL comment
         sct_code = sct_code.replace(sct_comment, pg_sql)
@@ -149,22 +149,23 @@ def replace_sct_comments(sct_code, llm_response):
 def write_updated_code(new_code, file_name):
     try:
         with open(f"updated_{file_name}", "w") as f:
-            # Use previous line to format generated code
-            previous_line = ""
+            previous_line = ""       
             comment_spaces = -1
             gen_ai_block = False
 
             for line in new_code.split('\n'):
                 # Check if the previous line is a Gen AI comment block and get indentation spaces
-                number_of_spaces = previous_line.find("/* Gen AI converted code below */")
+                number_of_spaces = previous_line.find("/* GENERATIVE AI CODE BELOW */")
                 end_of_block = line.find(";")
 
+                # If the Gen AI code block has started, then indent
                 if gen_ai_block == True:
                     spaces = " " * comment_spaces
                     line = f"""{spaces}{line}"""
                     f.writelines(line)
                     f.writelines("\n")
 
+                    # If the line contains a semicolon, then end the Gen AI code block
                     if end_of_block != -1:
                         gen_ai_block = False
 
@@ -176,12 +177,13 @@ def write_updated_code(new_code, file_name):
                     f.writelines("\n")
                     f.writelines(line)
                     f.writelines("\n")
-                    print(line)
 
+                    # If the line contains a semicolon, then end the Gen AI code block
                     if end_of_block != -1:
                         gen_ai_block = False
                 else:
-                    if line.find("/* Gen AI converted code below */") != -1:
+                    # If the line contains the Gen AI comment, then add space above it
+                    if line.find("/* GENERATIVE AI CODE BELOW */") != -1:
                         f.writelines("\n")
                         
                     f.writelines(line)
