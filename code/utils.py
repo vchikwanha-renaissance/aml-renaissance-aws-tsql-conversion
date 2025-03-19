@@ -2,6 +2,7 @@ import sys
 import re
 import boto3
 import logging
+import sqlparse
 
 from botocore.exceptions import ClientError
 from lxml import objectify
@@ -22,6 +23,7 @@ def list_s3_objects(s3_client, bucket_name):
         logger.info(f"Successfully listed objects in {bucket_name}")
 
         return object_keys
+    
     except ClientError as e:
         logger.error(f"Error listing objects in {bucket_name}: {e}")
         raise
@@ -37,6 +39,7 @@ def read_s3_file(s3_client, bucket_name, file_key):
         logger.info(f"Successfully read SCT Code from S3: {bucket_name}/{file_key}")
         
         return sct_code
+    
     except ClientError as e:
         logger.error(f"Error reading {bucket_name}/{file_key} from S3: {e}")
         raise
@@ -63,10 +66,10 @@ def extract_dms_comments(sct_code):
 
         logger.info(f"Successfully extracted DMS SC comment blocks")
 
+        return comment_blocks
+
     except ClientError as e:
         logger.error(f"Failed to extract DMS SC comment blocks: {e}")
-
-    return comment_blocks
 
 
 # Function to prompt LLM model to analyze T-SQL code and recommend PostgreSQL equivalent code
@@ -89,66 +92,104 @@ def prompt_llm(bedrock_agent_runtime, agent_id, agent_alias_id, session_id, prom
 
         logger.info("Successfully invoked Bedrock Agent Runtime")
 
+        return completion
+
     except ClientError as e:
         logger.error(f"Error invoking Bedrock Agent Runtime: {e}")
         raise
 
-    return completion
-
-
 
 # Function to parse XML tags from the LLM response and return a dictionary
-def extract_xml_tags(content):
-    # Compile a regular expression to match xml tags
-    pattern = re.compile(r'<([^>]+)>([^<]+)</\1>')
+def extract_xml_tags(content, action_item):
+    try:
+        # Compile a regular expression to match xml tags
+        pattern = re.compile(r'<([^>]+)>([^<]+)</\1>')
 
-    # Find all matches in the content
-    matches = pattern.findall(content)
+        # Find all matches in the content
+        matches = pattern.findall(content)
 
-    # Create a dictionary to store the extracted tags and their values
-    tags = {}
-    for match in matches:
-        tag_name = match[0]
-        tag_value = match[1]
-        tags[tag_name] = tag_value
+        # Create a dictionary to store the extracted tags and their values
+        tags = {}
+        for match in matches:
+            tag_name = match[0]
+            tag_value = match[1]
+            tags[tag_name] = tag_value
 
-    return tags
+        tags["sct"] = action_item
 
-
-# Function to clean up blank spaces from each line
-def remove_blank_spaces(action_items): 
-    items = {}
-
-    for i in action_items.keys():
-        block = action_items[i]
-
-        # cleanup blank spaces from each line
-        for line in block.split('\n'):
-            line = line.lstrip(' ')
-            items[i] = line
-
-
-    return items
+        return tags
+    
+    except Exception as e:
+        logger.error(f"Error extracting xml tags from LLM response {content}: {e}")
+        raise
         
 
 # Function to search and replace SCT comments
-def replace_sct_comments(sct_code, action_items):
-    for i in action_items.keys():
-        sct_comment = action_items[i]["sct"]
-        pg_sql = action_items[i]["sql"]
+def replace_sct_comments(sct_code, llm_response):
+    try:
+        sct_comment = llm_response["sct"]
+        pg_sql = llm_response["sql"]
+
+        # Handle new line characters so that the replacement SQL is not all on one line
+        #pg_sql = pg_sql.replace("\n", "\n\r")
+
+        pg_sql = f"""/* Gen AI converted code below */ {pg_sql}"""
 
         # Replace SCT comment with PostgreSQL comment
-        new_code = sct_code.replace(sct_comment, pg_sql)
+        sct_code = sct_code.replace(sct_comment, pg_sql)
 
-    return new_code
+        return sct_code
+    
+    except Exception as e:
+        logger.error(f"Error replacing SCT comments with Gen AI code {llm_response}: {e}")
+        raise
 
 
 # Function to write updated code to file
-def write_updated_code(new_code):
-    with open("updated_code.sql", "w") as f:
-        for line in new_code.split('\n'):
-            #line = line.lstrip(' ')
-            f.writelines(line)
+def write_updated_code(new_code, file_name):
+    try:
+        with open(f"updated_{file_name}", "w") as f:
+            # Use previous line to format generated code
+            previous_line = ""
+            comment_spaces = -1
+            gen_ai_block = False
+
+            for line in new_code.split('\n'):
+                # Check if the previous line is a Gen AI comment block and get indentation spaces
+                number_of_spaces = previous_line.find("/* Gen AI converted code below */")
+                end_of_block = line.find(";")
+
+                if gen_ai_block == True:
+                    spaces = " " * comment_spaces
+                    line = f"""{spaces}{line}"""
+                    f.writelines(line)
+                    f.writelines("\n")
+
+                    if end_of_block != -1:
+                        gen_ai_block = False
+
+                elif number_of_spaces != -1:
+                    gen_ai_block = True
+                    comment_spaces = number_of_spaces
+                    spaces = " " * comment_spaces
+                    line = f"""{spaces}{line}"""
+                    f.writelines("\n")
+                    f.writelines(line)
+                    f.writelines("\n")
+                    print(line)
+
+                    if end_of_block != -1:
+                        gen_ai_block = False
+                else:
+                    if line.find("/* Gen AI converted code below */") != -1:
+                        f.writelines("\n")
+                        
+                    f.writelines(line)
+
+                previous_line = line
+
+    except Exception as e:
+        logger.error(f"Error writing updates to updated_{file_name}: {e}")
            
 
 
