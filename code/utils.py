@@ -4,6 +4,7 @@ import boto3
 import logging
 
 from botocore.exceptions import ClientError
+from lxml import objectify
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__) 
@@ -68,36 +69,6 @@ def extract_dms_comments(sct_code):
     return comment_blocks
 
 
-def print_action_items(block, num, number_of_comments):
-                    
-        print(f"Action Item {num} of {number_of_comments}")
-        print("-" * 25)
-        
-        # cleanup blank spaces from each line
-        for line in block.split('\n'):
-            line = line.lstrip(' ')
-            print(line)
-
-        print("\n")
-
-
-def write_action_items(block, num, number_of_comments):
-    
-    with open("action_items.txt", "a") as f:
-        f.writelines(f"Action Item: {num} of {number_of_comments}\n")
-        f.writelines("-" * 25)
-        f.writelines("\n")
-        f.writelines("<sctComment>\n")
-        
-        # cleanup blank spaces from each line
-        for line in block.split('\n'):
-            line = line.lstrip(' ')
-            f.write("\t")
-            f.writelines(line)
-
-        f.writelines("\n</sctComment>\n")
-
-           
 # Function to prompt LLM model to analyze T-SQL code and recommend PostgreSQL equivalent code
 def prompt_llm(bedrock_agent_runtime, agent_id, agent_alias_id, session_id, prompt):
     
@@ -126,4 +97,61 @@ def prompt_llm(bedrock_agent_runtime, agent_id, agent_alias_id, session_id, prom
 
 
 
-    
+# Function to parse XML tags from the LLM response and return a dictionary
+def extract_xml_tags(content):
+    # Compile a regular expression to match xml tags
+    pattern = re.compile(r'<([^>]+)>([^<]+)</\1>')
+
+    # Find all matches in the content
+    matches = pattern.findall(content)
+
+    # Create a dictionary to store the extracted tags and their values
+    tags = {}
+    for match in matches:
+        tag_name = match[0]
+        tag_value = match[1]
+        tags[tag_name] = tag_value
+
+    return tags
+
+
+# Function to clean up blank spaces from each line
+def remove_blank_spaces(action_items): 
+    items = {}
+
+    for i in action_items.keys():
+        block = action_items[i]
+
+        # cleanup blank spaces from each line
+        for line in block.split('\n'):
+            line = line.lstrip(' ')
+            items[i] = line
+
+
+    return items
+        
+
+# Function to search and replace SCT comments
+def replace_sct_comments(sct_code, action_items):
+    for i in action_items.keys():
+        sct_comment = action_items[i]["sct"]
+        pg_sql = action_items[i]["sql"]
+
+        # Replace SCT comment with PostgreSQL comment
+        new_code = sct_code.replace(sct_comment, pg_sql)
+
+    return new_code
+
+
+# Function to write updated code to file
+def write_updated_code(new_code):
+    with open("updated_code.sql", "w") as f:
+        for line in new_code.split('\n'):
+            #line = line.lstrip(' ')
+            f.writelines(line)
+           
+
+
+
+
+

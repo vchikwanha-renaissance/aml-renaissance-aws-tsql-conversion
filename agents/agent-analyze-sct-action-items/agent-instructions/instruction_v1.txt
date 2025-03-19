@@ -36,3 +36,5 @@ Your response must be in the following format:
 
 
 YOU MUST ONLY PROVIDE EXECUTABLE SQL IN THE <sql>, <declaration>, <dependency> TAGS!
+
+DO NOT RETURN TEXT THAT IS NOT ENCLOSED IN XML TAGS!
