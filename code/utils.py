@@ -1,11 +1,9 @@
-import sys
 import re
-import boto3
+import time
 import logging
-import sqlparse
 
 from botocore.exceptions import ClientError
-from lxml import objectify
+import sqlparse
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__) 
@@ -74,29 +72,35 @@ def extract_dms_comments(sct_code):
 
 # Function to prompt LLM model to analyze T-SQL code and recommend PostgreSQL equivalent code
 def prompt_llm(bedrock_agent_runtime, agent_id, agent_alias_id, session_id, prompt):
+
+    attempts = 1
     
-    try:
-        response = bedrock_agent_runtime.invoke_agent(
-            agentId=agent_id,
-            agentAliasId=agent_alias_id,
-            sessionId=session_id,
-            endSession=False,
-            inputText=prompt,
-            streamingConfigurations={"streamFinalResponse":True}
-        )
+    while attempts <= 3:
+        try:
+            response = bedrock_agent_runtime.invoke_agent(
+                agentId=agent_id,
+                agentAliasId=agent_alias_id,
+                sessionId=session_id,
+                endSession=False,
+                inputText=prompt,
+                streamingConfigurations={"streamFinalResponse":True}
+            )
 
-        completion = ""
+            completion = ""
 
-        for event in response.get("completion"):
-            completion += event["chunk"]["bytes"].decode("utf8")
+            for event in response.get("completion"):
+                completion += event["chunk"]["bytes"].decode("utf8")
 
-        logger.info("Successfully invoked Bedrock Agent Runtime")
+            logger.info("Successfully invoked Bedrock Agent Runtime")
 
-        return completion
+            return completion
 
-    except ClientError as e:
-        logger.error(f"Error invoking Bedrock Agent Runtime: {e}")
-        raise
+        except ClientError as e:
+            attempts += 1
+            logger.error(f"Error invoking Bedrock Agent Runtime: {e}")
+            logger.info(f"Retrying... (Attempt {attempts})")
+            time.sleep(5)
+    
 
 
 # Function to parse XML tags from the LLM response and return a dictionary
@@ -126,23 +130,28 @@ def extract_xml_tags(content, action_item):
 
 # Function to search and replace SCT comments
 def replace_sct_comments(sct_code, llm_response):
-    try:
-        sct_comment = llm_response["sct"]
-        pg_sql = llm_response["sql"]
+    # Check if LLM response contains SQL item
+    if "sql" in llm_response:
+        try:
+            sct_comment = llm_response["sct"]
+            pg_sql = llm_response["sql"]
 
-        # Handle new line characters so that the replacement SQL is not all on one line
-        #pg_sql = pg_sql.replace("\n", "\n\r")
+            # Handle new line characters so that the replacement SQL is not all on one line
+            #pg_sql = pg_sql.replace("\n", "\n\r")
 
-        pg_sql = f"""/* GENERATIVE AI CODE BELOW */ {pg_sql}"""
+            pg_sql = f"""/* GENERATIVE AI CODE BELOW */ {pg_sql}"""
 
-        # Replace SCT comment with PostgreSQL comment
-        sct_code = sct_code.replace(sct_comment, pg_sql)
+            # Replace SCT comment with PostgreSQL comment
+            sct_code = sct_code.replace(sct_comment, pg_sql)
 
+            return sct_code
+        
+        except Exception as e:
+            logger.error(f"Error replacing SCT comments with Gen AI code {llm_response}: {e}")
+            raise
+    else:
+        logger.info(f"LLM response does not contain SQL item: {llm_response}")
         return sct_code
-    
-    except Exception as e:
-        logger.error(f"Error replacing SCT comments with Gen AI code {llm_response}: {e}")
-        raise
 
 
 # Function to write updated code to file
@@ -192,6 +201,15 @@ def write_updated_code(new_code, file_name):
 
     except Exception as e:
         logger.error(f"Error writing updates to updated_{file_name}: {e}")
+
+
+# Function to split code into chunks
+def extract_var_declarations(new_code):
+    pattern = r"var_.*? := .*?;"
+
+    matches = re.findall(pattern, new_code)
+
+    return matches
            
 
 
