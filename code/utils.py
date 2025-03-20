@@ -70,12 +70,38 @@ def extract_dms_comments(sct_code):
         logger.error(f"Failed to extract DMS SC comment blocks: {e}")
 
 
+# Function to extract dynamic SQL expressions code
+def extract_dynamic_expressions(sct_code):
+    try:
+        # Pattern to identify all expressions that begin with var_xxx :=
+        pattern = r"var_.*? := .*?;"
+
+        matches = re.findall(pattern, sct_code)
+
+        # Dictionary to store extracted dynamic SQL expressions
+        dynamic_expressions = {}
+
+        i = 1
+        # Iterate through all expressions
+        for match in matches:
+            if match.find("#") != -1 or match.find("+") != -1 or match.find("Convert") != -1  or match.find("varchar(max)") != -1:
+                dynamic_expressions[f"action_item_{i}"] = match
+                i += 1
+
+        logger.info(f"Successfully extracted dynamic SQL expressions")
+
+        return dynamic_expressions
+    
+    except ClientError as e:
+        logger.error(f"Failed to extract dynamic SQL expressions: {e}")
+
+
 # Function to prompt LLM model to analyze T-SQL code and recommend PostgreSQL equivalent code
 def prompt_llm(bedrock_agent_runtime, agent_id, agent_alias_id, session_id, prompt):
 
-    attempts = 1
+    attempts = 0
     
-    while attempts <= 3:
+    while attempts < 3:
         try:
             response = bedrock_agent_runtime.invoke_agent(
                 agentId=agent_id,
@@ -129,25 +155,22 @@ def extract_xml_tags(content, action_item):
         
 
 # Function to search and replace SCT comments
-def replace_sct_comments(sct_code, llm_response):
+def replace_sct_code(sct_code, llm_response):
     # Check if LLM response contains SQL item
     if "sql" in llm_response:
         try:
             sct_comment = llm_response["sct"]
             pg_sql = llm_response["sql"]
 
-            # Handle new line characters so that the replacement SQL is not all on one line
-            #pg_sql = pg_sql.replace("\n", "\n\r")
-
             pg_sql = f"""/* GENERATIVE AI CODE BELOW */ {pg_sql}"""
 
-            # Replace SCT comment with PostgreSQL comment
+            # Replace SCT code with PostgreSQL comment
             sct_code = sct_code.replace(sct_comment, pg_sql)
 
             return sct_code
         
         except Exception as e:
-            logger.error(f"Error replacing SCT comments with Gen AI code {llm_response}: {e}")
+            logger.error(f"Error replacing SCT code with Gen AI code {llm_response}: {e}")
             raise
     else:
         logger.info(f"LLM response does not contain SQL item: {llm_response}")
@@ -202,14 +225,6 @@ def write_updated_code(new_code, file_name):
     except Exception as e:
         logger.error(f"Error writing updates to updated_{file_name}: {e}")
 
-
-# Function to split code into chunks
-def extract_var_declarations(new_code):
-    pattern = r"var_.*? := .*?;"
-
-    matches = re.findall(pattern, new_code)
-
-    return matches
            
 
 

@@ -112,10 +112,9 @@ for comment in comment_blocks:
     llm_response = utils.extract_xml_tags(llm_response, action_item)
 
     # Replace SCT comments with SQL from LLM
-    new_code = utils.replace_sct_comments(new_code, llm_response)
+    new_code = utils.replace_sct_code(new_code, llm_response)
 
     # Write new code to file
     utils.write_updated_code(new_code, file_name)
 
 
-utils.split_sql(new_code)
