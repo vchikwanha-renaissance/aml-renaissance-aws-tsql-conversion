@@ -12,8 +12,11 @@ logger = logging.getLogger(__name__)
 bucket_name = "aml-renaissance-aws-tsql-conversion"
 file_key = "aws-sct/databases/stars_prod_ci_migration/stored-procedures/appsharegetnotificationlist.sql"
 file_name = "appsharegetnotificationlist.sql"
+agent_name = "agent-analyze-sct-action-items"
 agent_id = "XQSDB40KCL"
 agent_alias_id = "UBD6ABRSJF"
+
+new_file_key = file_key.replace("aws-sct", agent_name)
 
 
 s3_client = boto3.client('s3')
@@ -116,5 +119,8 @@ for comment in comment_blocks:
 
     # Write new code to file
     utils.write_updated_code(new_code, file_name)
+
+# Upload new code to s3
+utils.write_s3_file(s3_client, bucket_name, new_file_key, file_name)
 
 

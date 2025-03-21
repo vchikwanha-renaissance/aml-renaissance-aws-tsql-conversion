@@ -3,7 +3,6 @@ import time
 import logging
 
 from botocore.exceptions import ClientError
-import sqlparse
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__) 
@@ -40,6 +39,22 @@ def read_s3_file(s3_client, bucket_name, file_key):
     
     except ClientError as e:
         logger.error(f"Error reading {bucket_name}/{file_key} from S3: {e}")
+        raise
+
+
+# Function to write updated code to s3
+def write_s3_file(s3_client, bucket_name, file_key, file_name):
+
+    try:
+        with open(file_name, "r") as f:
+            content = f.read()
+
+            s3_client.put_object(Bucket=bucket_name, Key=file_key, Body=content)
+
+            logger.info(f"Successfully wrote file to S3: {bucket_name}/{file_key}")
+
+    except ClientError as e:
+        logger.error(f"Error writing {bucket_name}/{file_key} to S3: {e}")
         raise
 
 
@@ -180,7 +195,7 @@ def replace_sct_code(sct_code, llm_response):
 # Function to write updated code to file
 def write_updated_code(new_code, file_name):
     try:
-        with open(f"updated_{file_name}", "w") as f:
+        with open(f"{file_name}", "w") as f:
             previous_line = ""       
             comment_spaces = -1
             gen_ai_block = False
