@@ -115,10 +115,10 @@ for comment in comment_blocks:
     llm_response = utils.extract_xml_tags(llm_response, action_item)
 
     # Replace SCT comments with SQL from LLM
-    new_code = utils.replace_sct_code(new_code, llm_response)
+    new_code = utils.replace_sct_code(new_code, llm_response, agent_name)
 
     # Write new code to file
-    utils.write_updated_code(new_code, file_name)
+    utils.write_updated_code(new_code, file_name, agent_name)
 
 # Upload new code to s3
 utils.write_s3_file(s3_client, bucket_name, new_file_key, file_name)

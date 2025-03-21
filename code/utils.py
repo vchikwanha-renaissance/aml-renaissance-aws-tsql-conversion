@@ -99,9 +99,8 @@ def extract_dynamic_expressions(sct_code):
         i = 1
         # Iterate through all expressions
         for match in matches:
-            if match.find("#") != -1 or match.find("+") != -1 or match.find("Convert") != -1  or match.find("varchar(max)") != -1:
-                dynamic_expressions[f"action_item_{i}"] = match
-                i += 1
+            dynamic_expressions[f"action_item_{i}"] = match
+            i += 1
 
         logger.info(f"Successfully extracted dynamic SQL expressions")
 
@@ -170,14 +169,14 @@ def extract_xml_tags(content, action_item):
         
 
 # Function to search and replace SCT comments
-def replace_sct_code(sct_code, llm_response):
+def replace_sct_code(sct_code, llm_response, agent_name):
     # Check if LLM response contains SQL item
     if "sql" in llm_response:
         try:
             sct_comment = llm_response["sct"]
             pg_sql = llm_response["sql"]
 
-            pg_sql = f"""/* GENERATIVE AI CODE BELOW */ {pg_sql}"""
+            pg_sql = f"""/* GENERATIVE AI CODE BELOW: {agent_name} */ {pg_sql}"""
 
             # Replace SCT code with PostgreSQL comment
             sct_code = sct_code.replace(sct_comment, pg_sql)
@@ -193,50 +192,87 @@ def replace_sct_code(sct_code, llm_response):
 
 
 # Function to write updated code to file
-def write_updated_code(new_code, file_name):
+def write_updated_code(new_code, file_name, agent_name):
     try:
-        with open(f"{file_name}", "w") as f:
-            previous_line = ""       
-            comment_spaces = -1
+        with open(f"{file_name}", "w") as f:     
             gen_ai_block = False
+            number_of_spaces = 1
 
             for line in new_code.split('\n'):
-                # Check if the previous line is a Gen AI comment block and get indentation spaces
-                number_of_spaces = previous_line.find("/* GENERATIVE AI CODE BELOW */")
+                # Check if line contains GEN AI comment and get indentation spaces
+                gen_ai_comment = line.find(f"/* GENERATIVE AI CODE BELOW: {agent_name} */")
+
+                # Check if line contains semicolon to identify end of block
                 end_of_block = line.find(";")
-
-                # If the Gen AI code block has started, then indent
-                if gen_ai_block == True:
-                    spaces = " " * comment_spaces
-                    line = f"""{spaces}{line}"""
-                    f.writelines(line)
-                    f.writelines("\n")
-
-                    # If the line contains a semicolon, then end the Gen AI code block
-                    if end_of_block != -1:
-                        gen_ai_block = False
-
-                elif number_of_spaces != -1:
+                
+                if  gen_ai_comment != -1:
+                    # Set start of code block to true
                     gen_ai_block = True
-                    comment_spaces = number_of_spaces
-                    spaces = " " * comment_spaces
-                    line = f"""{spaces}{line}"""
+                    # Set the number of spaces to indent
+                    number_of_spaces = gen_ai_comment
+
+                    f.writelines("\n")    
+                    f.writelines(line)
                     f.writelines("\n")
+                elif gen_ai_block == True and gen_ai_comment == -1:
+                    # Set the number of spaces to indent
+                    spaces = " " * number_of_spaces
+                    # Add spaces to line
+                    line = f"""{spaces}{line}"""
+
                     f.writelines(line)
                     f.writelines("\n")
 
-                    # If the line contains a semicolon, then end the Gen AI code block
+                    # Check if it is the end of the code block
                     if end_of_block != -1:
                         gen_ai_block = False
                 else:
-                    # If the line contains the Gen AI comment, then add space above it
-                    if line.find("/* GENERATIVE AI CODE BELOW */") != -1:
-                        f.writelines("\n")
-                        
                     f.writelines(line)
+                    
+    except Exception as e:
+        logger.error(f"Error writing updates to updated_{file_name}: {e}")
 
-                previous_line = line
 
+# Function to write updated code to file. Difference with other function is \r\n split
+def write_updated_code2(new_code, file_name, agent_name):
+    try:
+        with open(f"{file_name}", "w") as f:     
+            gen_ai_block = False
+            number_of_spaces = 1
+
+            for line in new_code.split('\r\n'):
+                line = line.strip()
+                # Check if line contains GEN AI comment and get indentation spaces
+                gen_ai_comment = line.find(f"/* GENERATIVE AI CODE BELOW: {agent_name} */")
+
+                # Check if line contains semicolon to identify end of block
+                end_of_block = line.find(";")
+                
+                if  gen_ai_comment != -1:
+                    # Set start of code block to true
+                    gen_ai_block = True
+                    # Set the number of spaces to indent
+                    number_of_spaces = gen_ai_comment
+                    print(number_of_spaces)
+
+                    f.writelines("\n")    
+                    f.writelines(line)
+                    f.writelines("\n")
+                elif gen_ai_block == True and gen_ai_comment == -1:
+                    # Set the number of spaces to indent
+                    spaces = " " * number_of_spaces
+                    # Add spaces to line
+                    line = f"""{spaces}{line}"""
+
+                    f.writelines(line)
+                    f.writelines("\n")
+
+                    # Check if it is the end of the code block
+                    if end_of_block != -1:
+                        gen_ai_block = False
+                else:
+                    f.writelines(line)
+                    
     except Exception as e:
         logger.error(f"Error writing updates to updated_{file_name}: {e}")
 
