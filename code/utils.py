@@ -47,7 +47,7 @@ def write_s3_file(s3_client, bucket_name, file_key, file_name):
 
     try:
         with open(file_name, "r") as f:
-            content = f.read()
+            content = f.read().encode('utf-8')
 
             s3_client.put_object(Bucket=bucket_name, Key=file_key, Body=content)
 
@@ -89,18 +89,27 @@ def extract_dms_comments(sct_code):
 def extract_dynamic_expressions(sct_code):
     try:
         # Pattern to identify all expressions that begin with var_xxx :=
-        pattern = r"var_.*? := .*?;"
+        pattern = r"var_[A-Za-z]+\s*:=\s[^;]*;"
 
-        matches = re.findall(pattern, sct_code)
+        matches = re.finditer(pattern, sct_code, re.DOTALL)
 
         # Dictionary to store extracted dynamic SQL expressions
         dynamic_expressions = {}
 
+        # List of SQL Server DML and keywords
+        sql_keywords = ['select', 'insert', 'update', 'delete', 'dateadd', 'datediff', 'convert', 'isnumeric', '+', 'error_message']
+
         i = 1
         # Iterate through all expressions
         for match in matches:
-            dynamic_expressions[f"action_item_{i}"] = match
-            i += 1
+            block = match.group(0).strip()
+            for keyword in sql_keywords:
+                if block.lower().find(keyword) != -1:
+                    dynamic_expressions[f"action_item_{i}"] = block.strip()
+                    i += 1
+                    break
+                else:
+                    continue
 
         logger.info(f"Successfully extracted dynamic SQL expressions")
 
@@ -138,6 +147,7 @@ def prompt_llm(bedrock_agent_runtime, agent_id, agent_alias_id, session_id, prom
         except ClientError as e:
             attempts += 1
             logger.error(f"Error invoking Bedrock Agent Runtime: {e}")
+            logger.info(f"Error submitting the following prompt: {prompt}")
             logger.info(f"Retrying... (Attempt {attempts})")
             time.sleep(5)
     
@@ -147,16 +157,16 @@ def prompt_llm(bedrock_agent_runtime, agent_id, agent_alias_id, session_id, prom
 def extract_xml_tags(content, action_item):
     try:
         # Compile a regular expression to match xml tags
-        pattern = re.compile(r'<([^>]+)>([^<]+)</\1>')
+        pattern = r'(?:<([^/][^>]*?)>)(.*?)(?:</\1>)'
 
         # Find all matches in the content
-        matches = pattern.findall(content)
+        matches = re.finditer(pattern, content, re.DOTALL)
 
         # Create a dictionary to store the extracted tags and their values
         tags = {}
         for match in matches:
-            tag_name = match[0]
-            tag_value = match[1]
+            tag_name = match.group(1)
+            tag_value = match.group(2)
             tags[tag_name] = tag_value
 
         tags["sct"] = action_item
@@ -240,8 +250,9 @@ def write_updated_code2(new_code, file_name, agent_name):
             gen_ai_block = False
             number_of_spaces = 1
 
+            new_code = new_code.replace("\n", "\r\n")
+
             for line in new_code.split('\r\n'):
-                line = line.strip()
                 # Check if line contains GEN AI comment and get indentation spaces
                 gen_ai_comment = line.find(f"/* GENERATIVE AI CODE BELOW: {agent_name} */")
 
@@ -253,7 +264,6 @@ def write_updated_code2(new_code, file_name, agent_name):
                     gen_ai_block = True
                     # Set the number of spaces to indent
                     number_of_spaces = gen_ai_comment
-                    print(number_of_spaces)
 
                     f.writelines("\n")    
                     f.writelines(line)
@@ -272,6 +282,7 @@ def write_updated_code2(new_code, file_name, agent_name):
                         gen_ai_block = False
                 else:
                     f.writelines(line)
+                    f.writelines("\n")
                     
     except Exception as e:
         logger.error(f"Error writing updates to updated_{file_name}: {e}")

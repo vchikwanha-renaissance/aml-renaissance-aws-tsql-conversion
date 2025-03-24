@@ -1,0 +1,10 @@
+The following is a variable assignment that was partially converted to PostgreSQL 16 compatible code:
+{action_item}
+
+The variable assignment above is a snippet of the following code. Use the following code to understand the full context in which the code you provide must comply. 
+{sct_code}
+
+
+Your task is to provide a full and complete PostgreSQL 16 equivalent statement for the variable assignment you have received. 
+
+RETURN A COMPLETE AND EQUIVALENT POSTGRESQL COMPATIBLE VARIABLE ASSIGNMENT STATEMENT
