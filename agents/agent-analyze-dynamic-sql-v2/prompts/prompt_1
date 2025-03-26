@@ -1,0 +1,6 @@
+The following code snippet is from the {object_name} stored procedure. Use the stored procedure to understand the full context in which the code must comply:
+{action_item}
+
+Your task is to provide a full and complete PostgreSQL 16 equivalent statement for the code snippet you have received. Think through it, analyze the variable names, parameter names and temporary table names in use in the stored procedure and assess if the SQL Server compatible variable names, parameter names and temporary table names in the code snippet should be mapped to the PostreSQL compatible object names already existing in the stored procedure. 
+
+Thoroughly analyze the stored procedure and think it through, step by step. 

@@ -12,9 +12,9 @@ logger = logging.getLogger(__name__)
 bucket_name = "aml-renaissance-aws-tsql-conversion"
 file_key = "agent-analyze-sct-action-items/databases/stars_prod_ci_migration/stored-procedures/appsharegetnotificationlist.sql"
 file_name = "appsharegetnotificationlist.sql"
-agent_name = "agent-analyze-dynamic-sql"
-agent_id = "28BNG5JPPG"
-agent_alias_id = "FG8CS8WVHB"
+agent_name = "agent-analyze-dynamic-sql-v2"
+agent_id = "R8ZNIYI1EF"
+agent_alias_id = "CJHDM6H7DA"
 
 
 s3_client = boto3.client('s3')
@@ -42,17 +42,13 @@ for assignment in var_assignments:
 
     # Generate prompt values
     prompt = f"""
-The following is a variable assignment that was partially converted to PostgreSQL 16 compatible code:
+The following code snippet is from the {file_name} stored procedure. Give me PostgreSQL 16 equivalent code for the following code snippet:
 {action_item}
 
-The variable assignment above is a snippet of the following code. Use the following code to understand the full context in which the code you provide must comply. 
-{sct_code}
+Return the corrected PostgreSQL 16 version of the code snippet enclosed in <sql></sql> tags
 
-
-Your task is to provide a full and complete PostgreSQL 16 equivalent statement for the variable assignment you have received. 
-
-RETURN A COMPLETE AND EQUIVALENT POSTGRESQL COMPATIBLE VARIABLE ASSIGNMENT STATEMENT
-        """
+Thoroughly analyze the stored procedure, think it through, step by step. 
+"""
 
 
     # Get Agent Response

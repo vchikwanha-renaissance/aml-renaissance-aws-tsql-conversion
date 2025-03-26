@@ -34,6 +34,9 @@ def read_s3_file(s3_client, bucket_name, file_key):
         sct_code = response['Body'].read().decode('utf-8')
 
         logger.info(f"Successfully read SCT Code from S3: {bucket_name}/{file_key}")
+
+        # Replace SQL Server ERROR_MESSAGE with SQLERRM
+        sct_code = sct_code.replace("error_catch$ERROR_MESSAGE", "SQLERRM")
         
         return sct_code
     
@@ -97,7 +100,7 @@ def extract_dynamic_expressions(sct_code):
         dynamic_expressions = {}
 
         # List of SQL Server DML and keywords
-        sql_keywords = ['select', 'insert', 'update', 'delete', 'dateadd', 'datediff', 'convert', 'isnumeric', '+', 'error_message']
+        sql_keywords = ['select', 'insert', 'update', 'delete', 'dateadd', 'datediff', 'convert', 'isnumeric', '+', '#', 'error_message', 'varchar(max)']
 
         i = 1
         # Iterate through all expressions

@@ -138,27 +138,27 @@ BEGIN
                 SELECT NotificationID FROM Notification N 
                 JOIN ObjectType OT ON OT.ObjectTypeID = N.ObjectTypeID
                 JOIN Survey S ON N.ObjectId = S.SurveyID 
-                WHERE N.ToUserAccountID = ' || var_UserAccountID::text || ' AND N.ActionCode IS NULL AND S.ActiveCode = ''A'' 
+                WHERE N.ToUserAccountID = ' || var_UserAccountID::VARCHAR || ' AND N.ActionCode IS NULL AND S.ActiveCode = ''A'' 
                 AND Mode != 1 AND N.TypeCode = ''SUR'' AND OT.Name = ''Survey''
                 UNION ALL
                 SELECT NotificationID FROM Notification N 
                 JOIN ObjectType OT ON OT.ObjectTypeID = N.ObjectTypeID
                 JOIN RubricTemplate RT ON RT.RubricTemplateId = N.ObjectID 
-                WHERE N.ToUserAccountID = ' || var_UserAccountID::text || ' AND N.ActionCode IS NULL AND OT.Name = ''RubricTemplate''
+                WHERE N.ToUserAccountID = ' || var_UserAccountID::VARCHAR || ' AND N.ActionCode IS NULL AND OT.Name = ''RubricTemplate''
                 UNION ALL
-                (SELECT Notification.NotificationId FROM Notification
+                SELECT Notification.NotificationId FROM Notification
                 INNER JOIN ObjectType ON ObjectType.ObjectTypeID = Notification.ObjectTypeID
-                WHERE Notification.ToUserAccountID = ' || var_UserAccountID::text || ' AND Notification.ActionCode IS NULL
-                AND Notification.TypeCode != ''SAL'' AND Notification.Typecode != ''SUR'' 
-                AND Notification.ObjectTypeID NOT IN (SELECT ObjectTypeID FROM ObjectType WHERE Name IN(''RubricTemplate'', ''QTIExport'')) )
+                WHERE Notification.ToUserAccountID = ' || var_UserAccountID::VARCHAR || ' AND Notification.ActionCode IS NULL
+                AND Notification.TypeCode != ''SAL'' AND Notification.TypeCode != ''SUR'' 
+                AND Notification.ObjectTypeID NOT IN (SELECT ObjectTypeID FROM ObjectType WHERE Name IN(''RubricTemplate'', ''QTIExport''))
                 UNION ALL
                 SELECT NotificationID FROM Notification N 
                 JOIN ObjectType OT ON OT.ObjectTypeID = N.ObjectTypeID
                 JOIN PrintJob P ON P.PrintJobID = N.ObjectID 
                     AND P.ObjectTypeID IN (SELECT ObjectTypeID FROM ObjectType WHERE ObjectType.Name IN (''Bank'',''Assessment''))
-                WHERE N.ToUserAccountID = ' || var_UserAccountID::text || ' AND N.ActionCode IS NULL AND OT.Name = ''QTIExport'' AND N.TypeCode = ''BLKR''
+                WHERE N.ToUserAccountID = ' || var_UserAccountID::VARCHAR || ' AND N.ActionCode IS NULL AND OT.Name = ''QTIExport'' AND N.TypeCode = ''BLKR''
                 AND P.StatusCode IN (''3'', ''D'')
-            ) Count';
+            ) AS Count';
 
 
             /* GENERATIVE AI CODE BELOW: agent-analyze-sct-action-items */ 
@@ -201,7 +201,7 @@ BEGIN
                       JOIN ObjectType OT ON OT.ObjectTypeID = N1.ObjectTypeID AND OT.Name = ''Assessment'' 
                       JOIN UserAccount UA ON UA.UserAccountID = N1.CreatedBy
                       JOIN Assessment A ON A.AssessmentID = N1.ObjectID 
-                      WHERE N1.ToUserAccountID = ' || var_UserAccountID::text || ' AND N1.ActionCode IS NULL AND N1.TypeCode <> ''SOCRWP'') Z
+                      WHERE N1.ToUserAccountID = ' || var_UserAccountID::VARCHAR || ' AND N1.ActionCode IS NULL AND N1.TypeCode <> ''SOCRWP'') Z
                 JOIN Notification N2 ON Z.ObjectID = N2.ObjectID
                 JOIN Assessment A ON N2.ActionObjectID = A.AssessmentID
                 JOIN t$Permission P ON A.LevelCode = P.AccessLevelCode
@@ -211,14 +211,10 @@ BEGIN
                      THEN 'A.LevelCode = ''D'' AND A.TypeCode <> ''B''' ELSE 'FALSE' END ||
                 CASE WHEN EXISTS (SELECT 1 FROM t$permission WHERE objecttype = ''DItemBank'' LIMIT 1) 
                      THEN ' OR (A.LevelCode = ''D'' AND A.TypeCode = ''B'')' ELSE '' END ||
-                CASE WHEN EXISTS (SELECT 1 FROM t$permission WHERE objecttype = ''COtherTypes'' LIMIT 1) 
-                          AND var_AccessLevelCode IN (''C'', ''T'') 
-                     THEN ' OR (A.LevelCode = ''C'' AND A.LevelOwnerID = ' || var_UserCampusID::text || ' AND A.TypeCode <> ''B'')' 
-                     ELSE '' END ||
-                CASE WHEN EXISTS (SELECT 1 FROM t$permission WHERE objecttype = ''CItemBank'' LIMIT 1) 
-                          AND var_AccessLevelCode IN (''C'', ''T'') 
-                     THEN ' OR (A.LevelCode = ''C'' AND A.LevelOwnerID = ' || var_UserCampusID::text || ' AND A.TypeCode = ''B'')' 
-                     ELSE '' END ||
+                CASE WHEN EXISTS (SELECT 1 FROM t$permission WHERE objecttype = ''COtherTypes'' LIMIT 1) AND var_AccessLevelCode IN (''C'', ''T'') 
+                     THEN ' OR (A.LevelCode = ''C'' AND A.LevelOwnerID = ' || var_UserCampusID::VARCHAR || ' AND A.TypeCode <> ''B'')' ELSE '' END ||
+                CASE WHEN EXISTS (SELECT 1 FROM t$permission WHERE objecttype = ''CItemBank'' LIMIT 1) AND var_AccessLevelCode IN (''C'', ''T'') 
+                     THEN ' OR (A.LevelCode = ''C'' AND A.LevelOwnerID = ' || var_UserCampusID::VARCHAR || ' AND A.TypeCode = ''B'')' ELSE '' END ||
                 ')';
 
             RAISE NOTICE '%', var_Query;
@@ -245,22 +241,22 @@ BEGIN
 
             /* GENERATIVE AI CODE BELOW: agent-analyze-dynamic-sql-v2 */ 
             var_Query := 'SELECT Notification.ObjectID, Notification.ObjectTypeID, 
-                TO_CHAR(timezone(' || var_RequiredTZ::text || ', Notification.CreatedDate), ''MM/DD/YYYY'') as CreatedDate,
-                ObjectType.Name, Assessment.name as displayname, 
-                UserAccount.FirstName::text AS Fn, UserAccount.LastName::text as Ln, 
-                notification.Description::text AS "Description", Notification.NotificationID, 
+                TO_CHAR(GetDateTimeByTimezone(Notification.CreatedDate, ' || var_RequiredTZ::VARCHAR || '), ''MM/DD/YYYY'') AS CreatedDate,
+                ObjectType.Name, Assessment.name AS displayname, 
+                UserAccount.FirstName::TEXT AS Fn, UserAccount.LastName::TEXT AS Ln, 
+                Notification.Description::TEXT AS Description, Notification.NotificationID, 
                 (CASE WHEN Notification.ActionCode = ''A'' AND Notification.ActionObjectID IS NULL THEN ''O'' ELSE Notification.ActionCode END) AS ActionCode,
-                TO_CHAR(Notification.ActionDate, ''MM/DD/YYYY'') as ActionDate,
+                TO_CHAR(Notification.ActionDate, ''MM/DD/YYYY'') AS ActionDate,
                 Assessment.HasDocuments, Notification.AdditionalData,
                 (CASE WHEN AL.LevelCode = ''D'' THEN 1
                       WHEN AL.LevelCode = ''C'' THEN 2
-                      ELSE 0 END) as Accepted 
+                      ELSE 0 END) AS Accepted 
             FROM Notification
             INNER JOIN ObjectType ON ObjectType.ObjectTypeID = Notification.ObjectTypeID AND ObjectType.Name = ''Assessment'' 
             INNER JOIN UserAccount ON UserAccount.UserAccountID = Notification.CreatedBy
             INNER JOIN Assessment ON Assessment.assessmentID = Notification.ObjectID 
             LEFT OUTER JOIN t$AssessLevel AL ON AL.ObjectID = Notification.ObjectID 
-            WHERE Notification.ToUserAccountID = ' || var_UserAccountID::text || ' AND Notification.TypeCode <> ''SOCRWP'' ';
+            WHERE Notification.ToUserAccountID = ' || var_UserAccountID::VARCHAR || ' AND Notification.TypeCode <> ''SOCRWP'' ';
 
             /* Khushboo : commented below code and added above code for 'Allow teachers to share Assessments directly to specific school and district users' task 6.1 */
             /* set @Query = 'select ObjectID, ObjectTypeID, CreatedDate, Name, displayname, Fn, Ln, Description, NotificationID, ActionCode, ActionDate, HasDocuments, AdditionalData from (' */
@@ -281,8 +277,8 @@ BEGIN
                 IF (var_FromDate != '-1') THEN
 
                     /* GENERATIVE AI CODE BELOW: agent-analyze-dynamic-sql-v2 */ 
-                    var_Query := var_Query || ' AND Notification.CreatedDate >= DATE_TRUNC(''day'', ' || quote_literal(var_FromDate::date) || '::date)' ||
-                                             ' AND Notification.CreatedDate < DATE_TRUNC(''day'', ' || quote_literal(var_ToDate::date) || '::date) + INTERVAL ''1 day''';
+                    var_Query := var_Query || ' AND Notification.CreatedDate >= DATE_TRUNC(''day'', ' || quote_literal(var_FromDate::DATE) || '::DATE) 
+                                                AND Notification.CreatedDate < DATE_TRUNC(''day'', ' || quote_literal(var_ToDate::DATE) || '::DATE) + INTERVAL ''1 day''';
 
                 END IF;
 
@@ -297,16 +293,17 @@ BEGIN
 
             /* GENERATIVE AI CODE BELOW: agent-analyze-dynamic-sql-v2 */ 
             var_Query := 'SELECT Notification.ObjectID, Notification.ObjectTypeID, 
-                TO_CHAR(timezone(' || var_RequiredTZ::text || ', Notification.CreatedDate), ''MM/DD/YYYY'') AS CreatedDate, 
-                ObjectType.Name, Report.Name::text AS displayname, UserAccount.FirstName::text AS Fn,
-                UserAccount.LastName::text AS Ln, notification.Description::text AS "Description",
+                TO_CHAR(GetDateTimeByTimezone(Notification.CreatedDate, ' || var_RequiredTZ::VARCHAR || '), ''MM/DD/YYYY'') AS CreatedDate, 
+                ObjectType.Name, Report.Name::TEXT AS displayname, UserAccount.FirstName::TEXT AS Fn,
+                UserAccount.LastName::TEXT AS Ln, Notification.Description::TEXT AS Description,
                 Notification.NotificationID, Notification.ActionCode, 
-                TO_CHAR(Notification.ActionDate, ''MM/DD/YYYY'') AS ActionDate, NULL, Notification.AdditionalData, NULL 
+                TO_CHAR(Notification.ActionDate, ''MM/DD/YYYY'') AS ActionDate, 
+                ''''::TEXT, Notification.AdditionalData, ''''::TEXT 
             FROM Notification
                 INNER JOIN ObjectType ON ObjectType.ObjectTypeID = Notification.ObjectTypeID AND ObjectType.Name = ''Report''
                 INNER JOIN UserAccount ON UserAccount.UserAccountID = Notification.CreatedBy
                 INNER JOIN Report ON Report.ReportID = Notification.ObjectID 
-            WHERE Notification.ToUserAccountID = ' || var_UserAccountID::text || ' AND Notification.TypeCode <> ''BLKR''';
+            WHERE Notification.ToUserAccountID = ' || var_UserAccountID::VARCHAR || ' AND Notification.TypeCode <> ''BLKR''';
 
 
             IF (var_Type = 'n') THEN
@@ -315,8 +312,8 @@ BEGIN
                 IF (var_FromDate != '-1') THEN
 
                     /* GENERATIVE AI CODE BELOW: agent-analyze-dynamic-sql-v2 */ 
-                    var_Query := var_Query || ' AND Notification.CreatedDate >= DATE_TRUNC(''day'', ' || quote_literal(var_FromDate::date) || '::date)' ||
-                                             ' AND Notification.CreatedDate < DATE_TRUNC(''day'', ' || quote_literal(var_ToDate::date) || '::date) + INTERVAL ''1 day''';
+                    var_Query := var_Query || ' AND Notification.CreatedDate >= DATE_TRUNC(''day'', ' || quote_literal(var_FromDate::DATE) || '::DATE) 
+                                                AND Notification.CreatedDate < DATE_TRUNC(''day'', ' || quote_literal(var_ToDate::DATE) || '::DATE) + INTERVAL ''1 day''';
 
                 END IF;
 
@@ -330,22 +327,32 @@ BEGIN
             ;
 
             /* GENERATIVE AI CODE BELOW: agent-analyze-dynamic-sql-v2 */ 
-            var_Query := 'SELECT Notification.ObjectID, Notification.ObjectTypeID, 
-                TO_CHAR(timezone(' || quote_literal(var_RequiredTZ) || ', Notification.CreatedDate), ''MM/DD/YYYY'') AS CreatedDate, 
-                ObjectType.Name, CDData.Label::text AS displayname, 
-                UserAccount.FirstName::text AS Fn, UserAccount.LastName::text AS Ln, 
-                notification.Description::text AS "Description", Notification.NotificationID, Notification.ActionCode, 
-                TO_CHAR(Notification.ActionDate, ''MM/DD/YYYY'') AS ActionDate, NULL, Notification.AdditionalData, NULL
+            var_Query := 'WITH CDData AS (
+                SELECT CDF.Code, CDF.Label 
+                FROM CodeDomain CD 
+                JOIN CodeDefinition CDF ON CD.CodeDomainID = CDF.CodeDomainID 
+                WHERE CD.Name = ''AsyncReport''
+            )
+            SELECT 
+                Notification.ObjectID, 
+                Notification.ObjectTypeID, 
+                TO_CHAR(GetDateTimeByTimezone(Notification.CreatedDate, ' || var_RequiredTZ::VARCHAR || '), ''MM/DD/YYYY'') AS CreatedDate, 
+                ObjectType.Name, 
+                CDData.Label::TEXT AS displayname, 
+                UserAccount.FirstName::TEXT AS Fn, 
+                UserAccount.LastName::TEXT AS Ln, 
+                Notification.Description::TEXT AS Description, 
+                Notification.NotificationID, 
+                Notification.ActionCode, 
+                TO_CHAR(Notification.ActionDate, ''MM/DD/YYYY'') AS ActionDate, 
+                ''''::TEXT, 
+                Notification.AdditionalData, 
+                ''''::TEXT
             FROM Notification
-                INNER JOIN ObjectType ON ObjectType.ObjectTypeID = Notification.ObjectTypeID AND ObjectType.Name = ''AsyncReport''
-                INNER JOIN UserAccount ON UserAccount.UserAccountID = Notification.CreatedBy
-                INNER JOIN (
-                    SELECT CDF.Code, CDF.Label 
-                    FROM CodeDomain CD 
-                    JOIN CodeDefinition CDF ON CD.CodeDomainID = CDF.CodeDomainID 
-                    WHERE CD.Name = ''AsyncReport''
-                ) CDData ON Notification.TypeCode = CDData.Code
-            WHERE Notification.ToUserAccountID = ' || var_UserAccountID::text;
+            INNER JOIN ObjectType ON ObjectType.ObjectTypeID = Notification.ObjectTypeID AND ObjectType.Name = ''AsyncReport''
+            INNER JOIN UserAccount ON UserAccount.UserAccountID = Notification.CreatedBy
+            INNER JOIN CDData ON Notification.TypeCode = CDData.Code
+            WHERE Notification.ToUserAccountID = ' || var_UserAccountID::VARCHAR;
 
 
             IF (var_Type = 'n') THEN
@@ -358,7 +365,7 @@ BEGIN
                     IF (var_SearchString != '-1') THEN
 
                         /* GENERATIVE AI CODE BELOW: agent-analyze-dynamic-sql-v2 */ 
-                        var_Query := var_Query || ' AND CDData.Label::text LIKE ' || quote_literal('%' || var_SearchString || '%');
+                        var_Query := var_Query || ' AND CDData.Label::TEXT ILIKE ' || quote_literal('%' || replace(var_SearchString, '''', '''''') || '%');
 
                     END IF;
                 END IF;
@@ -391,17 +398,26 @@ BEGIN
             ;
 
             /* GENERATIVE AI CODE BELOW: agent-analyze-dynamic-sql-v2 */ 
-            var_Query := 'SELECT Notification.ObjectID, Notification.ObjectTypeID, 
-                TO_CHAR(timezone(' || quote_literal(var_RequiredTZ) || ', Notification.CreatedDate), ''MM/DD/YYYY'') AS CreatedDate, 
-                ObjectType.Name, ScoringEvent.Name::text AS displayname, 
-                UserAccount.FirstName::text AS Fn, UserAccount.LastName::text AS Ln, 
-                notification.Description::text AS "Description", Notification.NotificationID, Notification.ActionCode, 
-                TO_CHAR(Notification.ActionDate, ''MM/DD/YYYY'') AS ActionDate, NULL, Notification.AdditionalData, NULL 
+            var_Query := 'SELECT 
+                Notification.ObjectID, 
+                Notification.ObjectTypeID, 
+                TO_CHAR(GetDateTimeByTimezone(Notification.CreatedDate, ' || var_RequiredTZ::VARCHAR || '), ''MM/DD/YYYY'') AS CreatedDate, 
+                ObjectType.Name, 
+                ScoringEvent.Name::TEXT AS displayname, 
+                UserAccount.FirstName::TEXT AS Fn, 
+                UserAccount.LastName::TEXT AS Ln, 
+                Notification.Description::TEXT AS Description, 
+                Notification.NotificationID, 
+                Notification.ActionCode, 
+                TO_CHAR(Notification.ActionDate, ''MM/DD/YYYY'') AS ActionDate, 
+                ''''::TEXT, 
+                Notification.AdditionalData, 
+                ''''::TEXT 
             FROM Notification
                 INNER JOIN ObjectType ON ObjectType.ObjectTypeID = Notification.ObjectTypeID AND ObjectType.Name = ''ScoringEvent''
                 INNER JOIN ScoringEvent ON ScoringEvent.ScoringEventID = Notification.ObjectID 
                 INNER JOIN UserAccount ON UserAccount.UserAccountID = ScoringEvent.CreatedBy
-            WHERE Notification.ToUserAccountID = ' || var_UserAccountID::text;
+            WHERE Notification.ToUserAccountID = ' || var_UserAccountID::VARCHAR;
 
 
             IF (var_Type = 'n') THEN
@@ -410,8 +426,8 @@ BEGIN
                 IF (var_FromDate != '-1') THEN
 
                     /* GENERATIVE AI CODE BELOW: agent-analyze-dynamic-sql-v2 */ 
-                    var_Query := var_Query || ' AND Notification.CreatedDate >= DATE_TRUNC(''day'', ' || quote_literal(var_FromDate::date) || '::date)' ||
-                                             ' AND Notification.CreatedDate < DATE_TRUNC(''day'', ' || quote_literal(var_ToDate::date) || '::date) + INTERVAL ''1 day''';
+                    var_Query := var_Query || ' AND Notification.CreatedDate >= DATE_TRUNC(''day'', ' || quote_literal(var_FromDate::DATE) || '::DATE) 
+                                                AND Notification.CreatedDate < DATE_TRUNC(''day'', ' || quote_literal(var_ToDate::DATE) || '::DATE) + INTERVAL ''1 day''';
 
                 END IF;
 
@@ -426,17 +442,26 @@ BEGIN
             ;
 
             /* GENERATIVE AI CODE BELOW: agent-analyze-dynamic-sql-v2 */ 
-            var_Query := 'SELECT Notification.ObjectID, Notification.ObjectTypeID, 
-                TO_CHAR(timezone(' || quote_literal(var_RequiredTZ) || ', Notification.CreatedDate), ''MM/DD/YYYY'') AS CreatedDate, 
-                ObjectType.Name, DashboardPage.Name::text AS displayname, 
-                UserAccount.FirstName::text AS Fn, UserAccount.LastName::text AS Ln, 
-                notification.Description::text AS "Description", Notification.NotificationID, Notification.ActionCode, 
-                TO_CHAR(Notification.ActionDate, ''MM/DD/YYYY'') AS ActionDate, NULL, Notification.AdditionalData, NULL 
+            var_Query := 'SELECT 
+                Notification.ObjectID, 
+                Notification.ObjectTypeID, 
+                TO_CHAR(GetDateTimeByTimezone(Notification.CreatedDate, ' || var_RequiredTZ::VARCHAR || '), ''MM/DD/YYYY'') AS CreatedDate, 
+                ObjectType.Name, 
+                DashboardPage.Name::TEXT AS displayname, 
+                UserAccount.FirstName::TEXT AS Fn, 
+                UserAccount.LastName::TEXT AS Ln, 
+                Notification.Description::TEXT AS Description, 
+                Notification.NotificationID, 
+                Notification.ActionCode, 
+                TO_CHAR(Notification.ActionDate, ''MM/DD/YYYY'') AS ActionDate, 
+                ''''::TEXT, 
+                Notification.AdditionalData, 
+                ''''::TEXT 
             FROM Notification
                 INNER JOIN ObjectType ON ObjectType.ObjectTypeID = Notification.ObjectTypeID AND ObjectType.Name = ''DashboardPage''
                 INNER JOIN DashboardPage ON DashboardPage.DashboardPageID = Notification.ObjectID 
                 INNER JOIN UserAccount ON UserAccount.UserAccountID = DashboardPage.UserAccountID
-            WHERE Notification.ToUserAccountID = ' || var_UserAccountID::text;
+            WHERE Notification.ToUserAccountID = ' || var_UserAccountID::VARCHAR;
 
 
             IF (var_Type = 'n') THEN
@@ -445,8 +470,8 @@ BEGIN
                 IF (var_FromDate != '-1') THEN
 
                     /* GENERATIVE AI CODE BELOW: agent-analyze-dynamic-sql-v2 */ 
-                    var_Query := var_Query || ' AND Notification.CreatedDate >= DATE_TRUNC(''day'', ' || quote_literal(var_FromDate::date) || '::date)' ||
-                                             ' AND Notification.CreatedDate < DATE_TRUNC(''day'', ' || quote_literal(var_ToDate::date) || '::date) + INTERVAL ''1 day''';
+                    var_Query := var_Query || ' AND Notification.CreatedDate >= DATE_TRUNC(''day'', ' || quote_literal(var_FromDate::DATE) || '::DATE) 
+                                                AND Notification.CreatedDate < DATE_TRUNC(''day'', ' || quote_literal(var_ToDate::DATE) || '::DATE) + INTERVAL ''1 day''';
 
                 END IF;
 
@@ -464,29 +489,35 @@ BEGIN
             ;
 
             /* GENERATIVE AI CODE BELOW: agent-analyze-dynamic-sql-v2 */ 
-            var_Query := 'SELECT Notification.ObjectID, Notification.ObjectTypeID, 
-                TO_CHAR(timezone(' || quote_literal(var_RequiredTZ) || ', Notification.CreatedDate), ''MM/DD/YYYY'') AS CreatedDate, 
-                ObjectType.Name, Survey.Name::text AS displayname, 
-                UserAccount.FirstName::text AS Fn, UserAccount.LastName::text AS Ln, 
-                notification.Description::text AS "Description", Notification.NotificationID, Notification.ActionCode, 
+            var_Query := 'SELECT 
+                Notification.ObjectID, 
+                Notification.ObjectTypeID, 
+                TO_CHAR(GetDateTimeByTimezone(Notification.CreatedDate, ' || var_RequiredTZ::VARCHAR || '), ''MM/DD/YYYY'') AS CreatedDate, 
+                ObjectType.Name, 
+                Survey.Name::TEXT AS displayname, 
+                UserAccount.FirstName::TEXT AS Fn, 
+                UserAccount.LastName::TEXT AS Ln, 
+                Notification.Description::TEXT AS Description, 
+                Notification.NotificationID, 
+                Notification.ActionCode, 
                 TO_CHAR(Notification.ActionDate, ''MM/DD/YYYY'') AS ActionDate,
                 '''',
-                json_build_object(
+                JSON_BUILD_OBJECT(
                     ''StartDate'', TO_CHAR(Survey.StartDate, ''MM/DD/YYYY''),
                     ''EndDate'', TO_CHAR(Survey.EndDate, ''MM/DD/YYYY''),
-                    ''WindowStart'', Survey.WindowStart::text,
-                    ''WindowEnd'', Survey.WindowEnd::text,
-                    ''WindowDays'', Survey.WindowDays::text,
-                    ''AllowResubmission'', Survey.AllowResubmission::text,
-                    ''IsSurveySubmit'', (CASE WHEN EXISTS (SELECT 1 FROM SurveyAttempt WHERE SurveyID = Survey.SurveyID AND UserAccountID = ' || var_UserAccountID::text || ' LIMIT 1) THEN ''1'' ELSE ''0'' END),
-                    ''MethodOfDelivery'', Survey.MethodOfDelivery::text
-                )::text AS AdditionalData,
-                ''''
+                    ''WindowStart'', Survey.WindowStart::TEXT,
+                    ''WindowEnd'', Survey.WindowEnd::TEXT,
+                    ''WindowDays'', Survey.WindowDays::TEXT,
+                    ''AllowResubmission'', Survey.AllowResubmission::TEXT,
+                    ''IsSurveySubmit'', (CASE WHEN EXISTS (SELECT 1 FROM SurveyAttempt WHERE SurveyID = Survey.SurveyID AND UserAccountID = ' || var_UserAccountID::VARCHAR || ' LIMIT 1) THEN ''1'' ELSE ''0'' END),
+                    ''MethodOfDelivery'', Survey.MethodOfDelivery::TEXT
+                )::TEXT AS AdditionalData,
+                ''''::TEXT 
             FROM Notification
                 INNER JOIN ObjectType ON ObjectType.ObjectTypeID = Notification.ObjectTypeID AND ObjectType.Name = ''Survey''
                 INNER JOIN Survey ON Survey.SurveyID = Notification.ObjectID 
                 INNER JOIN UserAccount ON UserAccount.UserAccountID = Survey.CreatedBy
-            WHERE Survey.ActiveCode = ''A'' AND Mode != 1 AND Notification.ToUserAccountID = ' || var_UserAccountID::text || ' AND Notification.TypeCode = ''SUR''';
+            WHERE Survey.ActiveCode = ''A'' AND Mode != 1 AND Notification.ToUserAccountID = ' || var_UserAccountID::VARCHAR || ' AND Notification.TypeCode = ''SUR''';
 
 
             IF (var_Type = 'n') THEN
@@ -495,8 +526,8 @@ BEGIN
                 IF (var_FromDate != '-1') THEN
 
                     /* GENERATIVE AI CODE BELOW: agent-analyze-dynamic-sql-v2 */ 
-                    var_Query := var_Query || ' AND Notification.CreatedDate >= DATE_TRUNC(''day'', ' || quote_literal(var_FromDate::date) || '::date)' ||
-                                             ' AND Notification.CreatedDate < DATE_TRUNC(''day'', ' || quote_literal(var_ToDate::date) || '::date) + INTERVAL ''1 day''';
+                    var_Query := var_Query || ' AND Notification.CreatedDate >= DATE_TRUNC(''day'', ' || quote_literal(var_FromDate::DATE) || '::DATE) 
+                                                AND Notification.CreatedDate < DATE_TRUNC(''day'', ' || quote_literal(var_ToDate::DATE) || '::DATE) + INTERVAL ''1 day''';
 
                 END IF;
 
@@ -513,18 +544,26 @@ BEGIN
             /* ** Nithin: 07-11-2019 - Modified to support Notification featue - [SC-79] - HISD Notification Enhancements. @since v7.0.0. Modified query to join Notification table with AssessmentForm table. */
 
             /* GENERATIVE AI CODE BELOW: agent-analyze-dynamic-sql-v2 */ 
-            var_Query := 'SELECT Notification.ObjectID, Notification.ObjectTypeID, 
-                TO_CHAR(timezone(' || quote_literal(var_RequiredTZ) || ', Notification.CreatedDate), ''MM/DD/YYYY'') AS CreatedDate, 
-                ObjectType.Name, RubricTemplate.Name::text AS displayname, 
-                UserAccount.FirstName::text AS Fn, UserAccount.LastName::text AS Ln, 
-                notification.Description::text AS "Description", Notification.NotificationID, Notification.ActionCode, 
+            var_Query := 'SELECT 
+                Notification.ObjectID, 
+                Notification.ObjectTypeID, 
+                TO_CHAR(GetDateTimeByTimezone(Notification.CreatedDate, ' || var_RequiredTZ::VARCHAR || '), ''MM/DD/YYYY'') AS CreatedDate, 
+                ObjectType.Name, 
+                RubricTemplate.Name::TEXT AS displayname, 
+                UserAccount.FirstName::TEXT AS Fn, 
+                UserAccount.LastName::TEXT AS Ln, 
+                Notification.Description::TEXT AS Description, 
+                Notification.NotificationID, 
+                Notification.ActionCode, 
                 TO_CHAR(Notification.ActionDate, ''MM/DD/YYYY'') AS ActionDate,
-                NULL, Notification.AdditionalData, NULL
+                ''''::TEXT, 
+                Notification.AdditionalData, 
+                ''''::TEXT
             FROM Notification
                 INNER JOIN ObjectType ON ObjectType.ObjectTypeID = Notification.ObjectTypeID AND ObjectType.Name = ''RubricTemplate''
                 INNER JOIN RubricTemplate ON RubricTemplate.RubricTemplateID = Notification.ObjectID 
                 INNER JOIN UserAccount ON UserAccount.UserAccountID = Notification.CreatedBy
-            WHERE Notification.ToUserAccountID = ' || var_UserAccountID::text;
+            WHERE Notification.ToUserAccountID = ' || var_UserAccountID::VARCHAR;
 
 
             IF (var_Type = 'n') THEN
@@ -533,8 +572,8 @@ BEGIN
                 IF (var_FromDate != '-1') THEN
 
                     /* GENERATIVE AI CODE BELOW: agent-analyze-dynamic-sql-v2 */ 
-                    var_Query := var_Query || ' AND Notification.CreatedDate >= DATE_TRUNC(''day'', ' || quote_literal(var_FromDate::date) || '::date)' ||
-                                             ' AND Notification.CreatedDate < DATE_TRUNC(''day'', ' || quote_literal(var_ToDate::date) || '::date) + INTERVAL ''1 day''';
+                    var_Query := var_Query || ' AND Notification.CreatedDate >= DATE_TRUNC(''day'', ' || quote_literal(var_FromDate::DATE) || '::DATE) 
+                                                AND Notification.CreatedDate < DATE_TRUNC(''day'', ' || quote_literal(var_ToDate::DATE) || '::DATE) + INTERVAL ''1 day''';
 
                 END IF;
 
@@ -550,13 +589,21 @@ BEGIN
             ;
 
             /* GENERATIVE AI CODE BELOW: agent-analyze-dynamic-sql-v2 */ 
-            var_Query := 'SELECT Notification.ObjectID, Notification.ObjectTypeID, 
-                TO_CHAR(timezone(' || quote_literal(var_RequiredTZ) || ', Notification.CreatedDate), ''MM/DD/YYYY'') AS CreatedDate, 
-                ''Assessment Scoring'' AS ObjectTypeName, Assessment.Name::text AS displayname, 
-                UserAccount.FirstName::text AS Fn, UserAccount.LastName::text AS Ln, 
-                notification.Description::text AS "Description", Notification.NotificationID, Notification.ActionCode, 
-                TO_CHAR(Notification.ActionDate, ''MM/DD/YYYY'') AS ActionDate, NULL,
-                Notification.AdditionalData AS AdditionalData, NULL
+            var_Query := 'SELECT 
+                Notification.ObjectID, 
+                Notification.ObjectTypeID, 
+                TO_CHAR(GetDateTimeByTimezone(Notification.CreatedDate, ' || var_RequiredTZ::VARCHAR || '), ''MM/DD/YYYY'') AS CreatedDate, 
+                ''Assessment Scoring''::TEXT AS ObjectTypeName, 
+                Assessment.Name::TEXT AS displayname, 
+                UserAccount.FirstName::TEXT AS Fn, 
+                UserAccount.LastName::TEXT AS Ln, 
+                Notification.Description::TEXT AS Description, 
+                Notification.NotificationID, 
+                Notification.ActionCode, 
+                TO_CHAR(Notification.ActionDate, ''MM/DD/YYYY'') AS ActionDate,
+                ''''::TEXT, 
+                Notification.AdditionalData AS AdditionalData, 
+                ''''::TEXT
             FROM Notification
                 INNER JOIN ObjectType ON ObjectType.ObjectTypeID = Notification.ObjectTypeID';
 
@@ -584,8 +631,8 @@ BEGIN
                 IF (var_FromDate != '-1') THEN
 
                     /* GENERATIVE AI CODE BELOW: agent-analyze-dynamic-sql-v2 */ 
-                    var_Query := var_Query || ' AND Notification.CreatedDate >= DATE_TRUNC(''day'', ' || quote_literal(var_FromDate::date) || '::date)' ||
-                                             ' AND Notification.CreatedDate < DATE_TRUNC(''day'', ' || quote_literal(var_ToDate::date) || '::date) + INTERVAL ''1 day''';
+                    var_Query := var_Query || ' AND Notification.CreatedDate >= DATE_TRUNC(''day'', ' || quote_literal(var_FromDate::DATE) || '::DATE) 
+                                                AND Notification.CreatedDate < DATE_TRUNC(''day'', ' || quote_literal(var_ToDate::DATE) || '::DATE) + INTERVAL ''1 day''';
 
                 END IF;
 
@@ -600,22 +647,26 @@ BEGIN
             ;
 
             /* GENERATIVE AI CODE BELOW: agent-analyze-dynamic-sql-v2 */ 
-            var_Query := 'SELECT Notification.ObjectID, Notification.ObjectTypeID, 
-                TO_CHAR(timezone(' || quote_literal(var_RequiredTZ) || ', Notification.CreatedDate), ''MM/DD/YYYY'') AS CreatedDate, 
-                ''Answer Sheets'' AS ObjectTypeName, Assessment.Name::text AS displayname, 
-                UserAccount.FirstName::text AS Fn, UserAccount.LastName::text AS Ln, 
-                notification.Description::text AS "Description", Notification.NotificationID, Notification.ActionCode, 
-                TO_CHAR(Notification.ActionDate, ''MM/DD/YYYY'') AS ActionDate, NULL,
-                jsonb_set(
-                    Notification.AdditionalData::jsonb,
-                    ''{Grade}'',
-                    to_jsonb(COALESCE(Grade.ShortName, ''''))
-                )::text AS AdditionalData, 
+            var_Query := 'SELECT 
+                Notification.ObjectID, 
+                Notification.ObjectTypeID, 
+                TO_CHAR(GetDateTimeByTimezone(Notification.CreatedDate, ' || var_RequiredTZ::VARCHAR || '), ''MM/DD/YYYY'') AS CreatedDate, 
+                ''Answer Sheets''::TEXT AS ObjectTypeName, 
+                Assessment.Name::TEXT AS displayname, 
+                UserAccount.FirstName::TEXT AS Fn, 
+                UserAccount.LastName::TEXT AS Ln, 
+                Notification.Description::TEXT AS Description, 
+                Notification.NotificationID, 
+                Notification.ActionCode, 
+                TO_CHAR(Notification.ActionDate, ''MM/DD/YYYY'') AS ActionDate,
+                ''''::TEXT,
+                (Notification.AdditionalData || ''", "Grade" : "'' || 
+                    COALESCE(Grade.ShortName || ''"'', ''"'') || ''}'')::TEXT AS AdditionalData, 
                 CASE WHEN EXISTS (
                     SELECT 1 FROM PrintJob
                     WHERE PrintJob.ObjectID = Notification.ObjectID 
                     AND Notification.ObjectTypeID = PrintJob.ObjectTypeID
-                    AND (Notification.AdditionalData::jsonb->>''PrintJobID'')::text = PrintJob.PrintJobID::text
+                    AND SUBSTRING(Notification.AdditionalData FROM ''"PrintJobID":"([^"]+)"'') = PrintJob.PrintJobID::TEXT
                 ) THEN 1 ELSE 0 END AS HasPrintJob
             FROM Notification
                 INNER JOIN ObjectType ON ObjectType.ObjectTypeID = Notification.ObjectTypeID AND ObjectType.Name = ''AssessmentForm''
@@ -624,7 +675,7 @@ BEGIN
                 INNER JOIN Subject ON Subject.SubjectID = AssessmentForm.SubjectID
                 LEFT JOIN Grade ON Grade.GradeID = AssessmentForm.GradeID 
                 INNER JOIN UserAccount ON UserAccount.UserAccountID = Notification.CreatedBy
-            WHERE Notification.ToUserAccountID = ' || var_UserAccountID::text || ' AND Notification.TypeCode = ''BLKR''';
+            WHERE Notification.ToUserAccountID = ' || var_UserAccountID::VARCHAR || ' AND Notification.TypeCode = ''BLKR''';
 
 
             IF (var_Type = 'n') THEN
@@ -633,8 +684,8 @@ BEGIN
                 IF (var_FromDate != '-1') THEN
 
                     /* GENERATIVE AI CODE BELOW: agent-analyze-dynamic-sql-v2 */ 
-                    var_Query := var_Query || ' AND Notification.CreatedDate >= DATE_TRUNC(''day'', ' || quote_literal(var_FromDate::date) || '::date)' ||
-                                             ' AND Notification.CreatedDate < DATE_TRUNC(''day'', ' || quote_literal(var_ToDate::date) || '::date) + INTERVAL ''1 day''';
+                    var_Query := var_Query || ' AND Notification.CreatedDate >= DATE_TRUNC(''day'', ' || quote_literal(var_FromDate::DATE) || '::DATE) 
+                                                AND Notification.CreatedDate < DATE_TRUNC(''day'', ' || quote_literal(var_ToDate::DATE) || '::DATE) + INTERVAL ''1 day''';
 
                 END IF;
 
@@ -650,26 +701,32 @@ BEGIN
             ;
 
             /* GENERATIVE AI CODE BELOW: agent-analyze-dynamic-sql-v2 */ 
-            var_Query := 'SELECT Notification.ObjectID, Notification.ObjectTypeID, 
-                TO_CHAR(timezone(' || quote_literal(var_RequiredTZ) || ', Notification.CreatedDate), ''MM/DD/YYYY'') AS CreatedDate, 
-                CASE WHEN ObjectType.Name = ''HorizonBulkDownload'' THEN ''Horizon Report'' ELSE ''PDF of CR/WP Items'' END AS ReportType,
-                Assessment.Name::text AS displayname, 
-                UserAccount.FirstName::text AS Fn, UserAccount.LastName::text AS Ln, 
-                notification.Description::text AS "Description", Notification.NotificationID, Notification.ActionCode, 
+            var_Query := 'SELECT 
+                Notification.ObjectID, 
+                Notification.ObjectTypeID, 
+                TO_CHAR(GetDateTimeByTimezone(Notification.CreatedDate, ' || var_RequiredTZ::VARCHAR || '), ''MM/DD/YYYY'') AS CreatedDate, 
+                CASE WHEN ObjectType.Name = ''HorizonBulkDownload'' THEN ''Horizon Report'' ELSE ''PDF of CR/WP Items'' END AS ObjectTypeName, 
+                Assessment.Name::TEXT AS displayname, 
+                UserAccount.FirstName::TEXT AS Fn, 
+                UserAccount.LastName::TEXT AS Ln, 
+                Notification.Description::TEXT AS Description, 
+                Notification.NotificationID, 
+                Notification.ActionCode, 
                 TO_CHAR(Notification.ActionDate, ''MM/DD/YYYY'') AS ActionDate,
-                '''',
-                (Notification.AdditionalData::jsonb || ''{}"'')::text AS AdditionalData, 
+                ''''::TEXT,
+                (Notification.AdditionalData || ''"}'')::TEXT AS AdditionalData, 
                 CASE WHEN EXISTS (
                     SELECT 1 FROM PrintJob
                     WHERE PrintJob.ObjectID = Notification.ObjectID 
                     AND Notification.ObjectTypeID = PrintJob.ObjectTypeID
-                    AND (Notification.AdditionalData::jsonb->>''PrintJobID'')::text = PrintJob.PrintJobID::text
+                    AND SUBSTRING(Notification.AdditionalData FROM ''"PrintJobID":"([^"]+)"'') = PrintJob.PrintJobID::TEXT
                 ) THEN 1 ELSE 0 END AS HasPrintJob
             FROM Notification
-                INNER JOIN ObjectType ON ObjectType.ObjectTypeID = Notification.ObjectTypeID AND ObjectType.Name IN (''BulkPrintCR'', ''HorizonBulkDownload'')
+                INNER JOIN ObjectType ON ObjectType.ObjectTypeID = Notification.ObjectTypeID 
+                    AND ObjectType.Name IN (''BulkPrintCR'', ''HorizonBulkDownload'')
                 INNER JOIN Assessment ON Assessment.AssessmentID = Notification.ObjectID 
                 INNER JOIN UserAccount ON UserAccount.UserAccountID = Notification.CreatedBy
-            WHERE Notification.ToUserAccountID = ' || var_UserAccountID::text || ' AND Notification.TypeCode = ''BLKR''';
+            WHERE Notification.ToUserAccountID = ' || var_UserAccountID::VARCHAR || ' AND Notification.TypeCode = ''BLKR''';
 
 
             IF (var_Type = 'n') THEN
@@ -678,8 +735,8 @@ BEGIN
                 IF (var_FromDate != '-1') THEN
 
                     /* GENERATIVE AI CODE BELOW: agent-analyze-dynamic-sql-v2 */ 
-                    var_Query := var_Query || ' AND Notification.CreatedDate >= DATE_TRUNC(''day'', ' || quote_literal(var_FromDate::date) || '::date)' ||
-                                             ' AND Notification.CreatedDate < DATE_TRUNC(''day'', ' || quote_literal(var_ToDate::date) || '::date) + INTERVAL ''1 day''';
+                    var_Query := var_Query || ' AND Notification.CreatedDate >= DATE_TRUNC(''day'', ' || quote_literal(var_FromDate::DATE) || '::DATE) 
+                                                AND Notification.CreatedDate < DATE_TRUNC(''day'', ' || quote_literal(var_ToDate::DATE) || '::DATE) + INTERVAL ''1 day''';
 
                 END IF;
 
@@ -694,26 +751,32 @@ BEGIN
             ;
 
             /* GENERATIVE AI CODE BELOW: agent-analyze-dynamic-sql-v2 */ 
-            var_Query := 'SELECT Notification.ObjectID, Notification.ObjectTypeID, 
-                TO_CHAR(timezone(' || quote_literal(var_RequiredTZ) || ', Notification.CreatedDate), ''MM/DD/YYYY'') AS CreatedDate, 
-                ''Standards Progression Report'' AS ReportType,
-                Report.Name::text AS displayname, 
-                UserAccount.FirstName::text AS Fn, UserAccount.LastName::text AS Ln, 
-                notification.Description::text AS "Description", Notification.NotificationID, Notification.ActionCode, 
+            var_Query := 'SELECT 
+                Notification.ObjectID, 
+                Notification.ObjectTypeID, 
+                TO_CHAR(GetDateTimeByTimezone(Notification.CreatedDate, ' || var_RequiredTZ::VARCHAR || '), ''MM/DD/YYYY'') AS CreatedDate, 
+                ''Standards Progression Report''::TEXT AS ObjectTypeName, 
+                Report.Name::TEXT AS displayname, 
+                UserAccount.FirstName::TEXT AS Fn, 
+                UserAccount.LastName::TEXT AS Ln, 
+                Notification.Description::TEXT AS Description, 
+                Notification.NotificationID, 
+                Notification.ActionCode, 
                 TO_CHAR(Notification.ActionDate, ''MM/DD/YYYY'') AS ActionDate,
-                '''',
-                (Notification.AdditionalData::jsonb || ''{}"'')::text AS AdditionalData, 
+                ''''::TEXT,
+                (Notification.AdditionalData || ''"}''')::TEXT AS AdditionalData, 
                 CASE WHEN EXISTS (
                     SELECT 1 FROM PrintJob
                     WHERE PrintJob.ObjectID = Notification.ObjectID 
                     AND Notification.ObjectTypeID = PrintJob.ObjectTypeID
-                    AND (Notification.AdditionalData::jsonb->>''PrintJobID'')::text = PrintJob.PrintJobID::text
+                    AND SUBSTRING(Notification.AdditionalData FROM ''"PrintJobID":"([^"]+)"'') = PrintJob.PrintJobID::TEXT
                 ) THEN 1 ELSE 0 END AS HasPrintJob
             FROM Notification
-                INNER JOIN ObjectType ON ObjectType.ObjectTypeID = Notification.ObjectTypeID AND ObjectType.Name = ''Standards Progression''
+                INNER JOIN ObjectType ON ObjectType.ObjectTypeID = Notification.ObjectTypeID 
+                    AND ObjectType.Name = ''Standards Progression''
                 INNER JOIN Report ON Report.ReportID = Notification.ObjectID 
                 INNER JOIN UserAccount ON UserAccount.UserAccountID = Notification.CreatedBy
-            WHERE Notification.ToUserAccountID = ' || var_UserAccountID::text || ' AND Notification.TypeCode = ''BLKR''';
+            WHERE Notification.ToUserAccountID = ' || var_UserAccountID::VARCHAR || ' AND Notification.TypeCode = ''BLKR''';
 
 
             IF (var_Type = 'n') THEN
@@ -722,8 +785,8 @@ BEGIN
                 IF (var_FromDate != '-1') THEN
 
                     /* GENERATIVE AI CODE BELOW: agent-analyze-dynamic-sql-v2 */ 
-                    var_Query := var_Query || ' AND Notification.CreatedDate >= DATE_TRUNC(''day'', ' || quote_literal(var_FromDate::date) || '::date)' ||
-                                             ' AND Notification.CreatedDate < DATE_TRUNC(''day'', ' || quote_literal(var_ToDate::date) || '::date) + INTERVAL ''1 day''';
+                    var_Query := var_Query || ' AND Notification.CreatedDate >= DATE_TRUNC(''day'', ' || quote_literal(var_FromDate::DATE) || '::DATE) 
+                                                AND Notification.CreatedDate < DATE_TRUNC(''day'', ' || quote_literal(var_ToDate::DATE) || '::DATE) + INTERVAL ''1 day''';
 
                 END IF;
 
@@ -740,24 +803,30 @@ BEGIN
                 ;
 
                 /* GENERATIVE AI CODE BELOW: agent-analyze-dynamic-sql-v2 */ 
-                var_Query := 'SELECT Notification.ObjectID, Notification.ObjectTypeID, 
-                    TO_CHAR(timezone(' || quote_literal(var_RequiredTZ) || ', Notification.CreatedDate), ''MM/DD/YYYY'') AS CreatedDate, 
-                    ''Student History Report'' AS ReportType,
-                    '''' AS displayname, 
-                    UserAccount.FirstName::text AS Fn, UserAccount.LastName::text AS Ln, 
-                    notification.Description::text AS "Description", Notification.NotificationID, Notification.ActionCode, 
+                var_Query := 'SELECT 
+                    Notification.ObjectID, 
+                    Notification.ObjectTypeID, 
+                    TO_CHAR(GetDateTimeByTimezone(Notification.CreatedDate, ' || var_RequiredTZ::VARCHAR || '), ''MM/DD/YYYY'') AS CreatedDate, 
+                    ''Student History Report''::TEXT AS ObjectTypeName, 
+                    ''''::TEXT AS displayname, 
+                    UserAccount.FirstName::TEXT AS Fn, 
+                    UserAccount.LastName::TEXT AS Ln, 
+                    Notification.Description::TEXT AS Description, 
+                    Notification.NotificationID, 
+                    Notification.ActionCode, 
                     TO_CHAR(Notification.ActionDate, ''MM/DD/YYYY'') AS ActionDate,
-                    '''',
-                    (Notification.AdditionalData::jsonb || ''{}"'')::text AS AdditionalData, 
+                    ''''::TEXT,
+                    (Notification.AdditionalData || ''"}''')::TEXT AS AdditionalData, 
                     CASE WHEN EXISTS (
                         SELECT 1 FROM PrintJob
                         WHERE Notification.ObjectTypeID = PrintJob.ObjectTypeID
-                        AND (Notification.AdditionalData::jsonb->>''PrintJobID'')::text = PrintJob.PrintJobID::text
+                        AND SUBSTRING(Notification.AdditionalData FROM ''"PrintJobID":"([^"]+)"'') = PrintJob.PrintJobID::TEXT
                     ) THEN 1 ELSE 0 END AS HasPrintJob
                 FROM Notification
-                    INNER JOIN ObjectType ON ObjectType.ObjectTypeID = Notification.ObjectTypeID AND ObjectType.Name = ''Report''
+                    INNER JOIN ObjectType ON ObjectType.ObjectTypeID = Notification.ObjectTypeID 
+                        AND ObjectType.Name = ''Report''
                     INNER JOIN UserAccount ON UserAccount.UserAccountID = Notification.CreatedBy
-                WHERE Notification.ToUserAccountID = ' || var_UserAccountID::text || ' AND Notification.TypeCode = ''BLKR''';
+                WHERE Notification.ToUserAccountID = ' || var_UserAccountID::VARCHAR || ' AND Notification.TypeCode = ''BLKR''';
 
 
                 IF (var_Type = 'n') THEN
@@ -766,8 +835,8 @@ BEGIN
                     IF (var_FromDate != '-1') THEN
 
                         /* GENERATIVE AI CODE BELOW: agent-analyze-dynamic-sql-v2 */ 
-                        var_Query := var_Query || ' AND Notification.CreatedDate >= DATE_TRUNC(''day'', ' || quote_literal(var_FromDate::date) || '::date)' ||
-                                                 ' AND Notification.CreatedDate < DATE_TRUNC(''day'', ' || quote_literal(var_ToDate::date) || '::date) + INTERVAL ''1 day''';
+                        var_Query := var_Query || ' AND Notification.CreatedDate >= DATE_TRUNC(''day'', ' || quote_literal(var_FromDate::DATE) || '::DATE) 
+                                                    AND Notification.CreatedDate < DATE_TRUNC(''day'', ' || quote_literal(var_ToDate::DATE) || '::DATE) + INTERVAL ''1 day''';
 
                     END IF;
                     /* if(@SearchString != '-1')  set @Query+= ' and Report.name like  ''%' + @SearchString + '%''' */
@@ -780,26 +849,32 @@ BEGIN
             ;
 
             /* GENERATIVE AI CODE BELOW: agent-analyze-dynamic-sql-v2 */ 
-            var_Query := 'SELECT Notification.ObjectID, Notification.ObjectTypeID, 
-                TO_CHAR(timezone(' || quote_literal(var_RequiredTZ) || ', Notification.CreatedDate), ''MM/DD/YYYY'') AS CreatedDate, 
-                ''Survey Sheets'' AS ReportType,
-                Survey.Name::text AS displayname, 
-                UserAccount.FirstName::text AS Fn, UserAccount.LastName::text AS Ln, 
-                notification.Description::text AS "Description", Notification.NotificationID, Notification.ActionCode, 
+            var_Query := 'SELECT 
+                Notification.ObjectID, 
+                Notification.ObjectTypeID, 
+                TO_CHAR(GetDateTimeByTimezone(Notification.CreatedDate, ' || var_RequiredTZ::VARCHAR || '), ''MM/DD/YYYY'') AS CreatedDate, 
+                ''Survey Sheets''::TEXT AS ObjectTypeName, 
+                Survey.Name::TEXT AS displayname, 
+                UserAccount.FirstName::TEXT AS Fn, 
+                UserAccount.LastName::TEXT AS Ln, 
+                Notification.Description::TEXT AS Description, 
+                Notification.NotificationID, 
+                Notification.ActionCode, 
                 TO_CHAR(Notification.ActionDate, ''MM/DD/YYYY'') AS ActionDate,
-                '''',
-                (Notification.AdditionalData::jsonb || ''{}"'')::text AS AdditionalData, 
+                ''''::TEXT,
+                (Notification.AdditionalData || ''"}''')::TEXT AS AdditionalData, 
                 CASE WHEN EXISTS (
                     SELECT 1 FROM PrintJob
                     WHERE PrintJob.ObjectID = Notification.ObjectID 
                     AND Notification.ObjectTypeID = PrintJob.ObjectTypeID
-                    AND (Notification.AdditionalData::jsonb->>''PrintJobID'')::text = PrintJob.PrintJobID::text
+                    AND SUBSTRING(Notification.AdditionalData FROM ''"PrintJobID":"([^"]+)"'') = PrintJob.PrintJobID::TEXT
                 ) THEN 1 ELSE 0 END AS HasPrintJob
             FROM Notification
-                INNER JOIN ObjectType ON ObjectType.ObjectTypeID = Notification.ObjectTypeID AND ObjectType.Name = ''Survey''
+                INNER JOIN ObjectType ON ObjectType.ObjectTypeID = Notification.ObjectTypeID 
+                    AND ObjectType.Name = ''Survey''
                 INNER JOIN Survey ON Survey.SurveyID = Notification.ObjectID 
                 INNER JOIN UserAccount ON UserAccount.UserAccountID = Notification.CreatedBy
-            WHERE Notification.ToUserAccountID = ' || var_UserAccountID::text || ' AND Notification.TypeCode = ''BLKR''';
+            WHERE Notification.ToUserAccountID = ' || var_UserAccountID::VARCHAR || ' AND Notification.TypeCode = ''BLKR''';
 
 
             IF (var_Type = 'n') THEN
@@ -808,8 +883,8 @@ BEGIN
                 IF (var_FromDate != '-1') THEN
 
                     /* GENERATIVE AI CODE BELOW: agent-analyze-dynamic-sql-v2 */ 
-                    var_Query := var_Query || ' AND Notification.CreatedDate >= DATE_TRUNC(''day'', ' || quote_literal(var_FromDate::date) || '::date)' ||
-                                             ' AND Notification.CreatedDate < DATE_TRUNC(''day'', ' || quote_literal(var_ToDate::date) || '::date) + INTERVAL ''1 day''';
+                    var_Query := var_Query || ' AND Notification.CreatedDate >= DATE_TRUNC(''day'', ' || quote_literal(var_FromDate::DATE) || '::DATE) 
+                                                AND Notification.CreatedDate < DATE_TRUNC(''day'', ' || quote_literal(var_ToDate::DATE) || '::DATE) + INTERVAL ''1 day''';
 
                 END IF;
 
@@ -825,28 +900,34 @@ BEGIN
             ;
 
             /* GENERATIVE AI CODE BELOW: agent-analyze-dynamic-sql-v2 */ 
-            var_Query := 'SELECT Notification.ObjectID, Notification.ObjectTypeID, 
-                TO_CHAR(timezone(' || quote_literal(var_RequiredTZ) || ', Notification.CreatedDate), ''MM/DD/YYYY'') AS CreatedDate, 
-                ''QTIExport'' AS ReportType,
-                AttachedFile.OriginalName::text AS DisplayName, 
-                UserAccount.FirstName::text AS Fn, UserAccount.LastName::text AS Ln, 
-                notification.Description::text AS "Description", Notification.NotificationID, Notification.ActionCode, 
+            var_Query := 'SELECT 
+                Notification.ObjectID, 
+                Notification.ObjectTypeID, 
+                TO_CHAR(GetDateTimeByTimezone(Notification.CreatedDate, ' || var_RequiredTZ::VARCHAR || '), ''MM/DD/YYYY'') AS CreatedDate, 
+                ''QTIExport''::TEXT AS ObjectTypeName, 
+                AttachedFile.OriginalName::TEXT AS DisplayName, 
+                UserAccount.FirstName::TEXT AS Fn, 
+                UserAccount.LastName::TEXT AS Ln, 
+                Notification.Description::TEXT AS Description, 
+                Notification.NotificationID, 
+                Notification.ActionCode, 
                 TO_CHAR(Notification.ActionDate, ''MM/DD/YYYY'') AS ActionDate,
-                '''',
-                json_build_object(
-                    ''PrintJobID'', AttachedFile.ObjectID::text,
+                ''''::TEXT,
+                JSON_BUILD_OBJECT(
+                    ''PrintJobID'', AttachedFile.ObjectID::TEXT,
                     ''QTIFileName'', AttachedFile.OriginalName,
                     ''DateRequested'', TO_CHAR(P.CreatedDate, ''MM-DD-YYYY HH24:MI:SS'')
-                )::text AS AdditionalData,
+                )::TEXT AS AdditionalData,
                 NULL
             FROM Notification
-                INNER JOIN ObjectType ON ObjectType.ObjectTypeID = Notification.ObjectTypeID AND ObjectType.Name = ''QTIExport''
+                INNER JOIN ObjectType ON ObjectType.ObjectTypeID = Notification.ObjectTypeID 
+                    AND ObjectType.Name = ''QTIExport''
                 INNER JOIN PrintJob P ON P.PrintJobID = Notification.ObjectID 
                     AND P.ObjectTypeID IN (SELECT ObjectTypeID FROM ObjectType WHERE ObjectType.Name IN (''Bank'', ''Assessment''))
                 INNER JOIN AttachedFile ON AttachedFile.ObjectID = P.PrintJobID 
                     AND AttachedFile.ObjectTypeID = (SELECT ObjectTypeID FROM ObjectType WHERE ObjectType.Name = ''PrintJob'')
                 INNER JOIN UserAccount ON UserAccount.UserAccountID = Notification.CreatedBy
-            WHERE Notification.ToUserAccountID = ' || var_UserAccountID::text || ' AND Notification.TypeCode = ''BLKR''';
+            WHERE Notification.ToUserAccountID = ' || var_UserAccountID::VARCHAR || ' AND Notification.TypeCode = ''BLKR''';
 
 
             IF (var_Type = 'n') THEN
@@ -855,8 +936,8 @@ BEGIN
                 IF (var_FromDate != '-1') THEN
 
                     /* GENERATIVE AI CODE BELOW: agent-analyze-dynamic-sql-v2 */ 
-                    var_Query := var_Query || ' AND Notification.CreatedDate >= DATE_TRUNC(''day'', ' || quote_literal(var_FromDate::date) || '::date)' ||
-                                             ' AND Notification.CreatedDate < DATE_TRUNC(''day'', ' || quote_literal(var_ToDate::date) || '::date) + INTERVAL ''1 day''';
+                    var_Query := var_Query || ' AND Notification.CreatedDate >= DATE_TRUNC(''day'', ' || quote_literal(var_FromDate::DATE) || '::DATE) 
+                                                AND Notification.CreatedDate < DATE_TRUNC(''day'', ' || quote_literal(var_ToDate::DATE) || '::DATE) + INTERVAL ''1 day''';
 
                 END IF;
 
@@ -880,11 +961,11 @@ BEGIN
             WHEN OTHERS THEN
 
                 /* GENERATIVE AI CODE BELOW: agent-analyze-dynamic-sql-v2 */ 
-                var_Parameters := 'SELECT appsharegetnotificationlist(' || quote_literal(par_NotificationXML::text) || ')';
+                var_Parameters := 'CALL appsharegetnotificationlist(' || quote_literal(par_NotificationXML::TEXT) || ')';
 
                 /* Exception Handling, If we are getting any error, then required information will be stored into below Error Table */
                 INSERT INTO dbo.errortable (dbname, query, errormessage, procedurename, createddate)
-                VALUES (current_database(), var_Parameters, SQLERRM, 'appsharegetnotificationlist', clock_timestamp());
+                VALUES (current_database(), var_Parameters, error_catch$ERROR_MESSAGE, 'appsharegetnotificationlist', clock_timestamp());
                 OPEN p_refcur FOR
                 SELECT
                     - 1;
