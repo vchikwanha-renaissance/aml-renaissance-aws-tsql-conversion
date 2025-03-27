@@ -1,1090 +1,0 @@
-Action Item: 1 of 37
--------------------------
-<sctComment>
-	/*	[7708 - Severity CRITICAL - DMS SC can't convert the usage of the unsupported XML.VALUE(VARCHAR,VARCHAR) data type. Convert your source code manually., 7708 - Severity CRITICAL - DMS SC can't convert the usage of the unsupported XML.VALUE(VARCHAR,VARCHAR) data type. Convert your source code manually., 7708 - Severity CRITICAL - DMS SC can't convert the usage of the unsupported XML.VALUE(VARCHAR,VARCHAR) data type. Convert your source code manually., 7708 - Severity CRITICAL - DMS SC can't convert the usage of the unsupported XML.NODES(VARCHAR) data type. Convert your source code manually.]	select @AllowAccess  = isnull(objNode.value('access[1]', 'char(1)'),'Y'),				@PastYear     = objNode.value('years[1]', 'int'),				@FutureYear   = objNode.value('aaccess[1]', 'char(1)')		from				@PastRosterVisibility.nodes('/roster') nodeset(objNode)	*/
-</sctComment>
-Action Item: 1 of 37
--------------------------
-<sctComment>
-	/*	[7708 - Severity CRITICAL - DMS SC can't convert the usage of the unsupported XML.VALUE(VARCHAR,VARCHAR) data type. Convert your source code manually., 7708 - Severity CRITICAL - DMS SC can't convert the usage of the unsupported XML.VALUE(VARCHAR,VARCHAR) data type. Convert your source code manually., 7708 - Severity CRITICAL - DMS SC can't convert the usage of the unsupported XML.VALUE(VARCHAR,VARCHAR) data type. Convert your source code manually., 7708 - Severity CRITICAL - DMS SC can't convert the usage of the unsupported XML.NODES(VARCHAR) data type. Convert your source code manually.]	select @AllowAccess  = isnull(objNode.value('access[1]', 'char(1)'),'Y'),				@PastYear     = objNode.value('years[1]', 'int'),				@FutureYear   = objNode.value('aaccess[1]', 'char(1)')		from				@PastRosterVisibility.nodes('/roster') nodeset(objNode)	*/
-</sctComment>
-
-	To convert this T-SQL code that uses XML operations to PostgreSQL 16 compatible code, we need to use PostgreSQL's XML functions. Here's the equivalent PostgreSQL code:
-
-<sql>
-WITH xml_data AS (
-    SELECT unnest(xpath('/roster/access/text()', var_PastRosterVisibility)) AS access,
-           unnest(xpath('/roster/years/text()', var_PastRosterVisibility)) AS years,
-           unnest(xpath('/roster/aaccess/text()', var_PastRosterVisibility)) AS aaccess
-)
-SELECT 
-    COALESCE((xpath('/text()', access))[1]::text, 'Y')::char(1) AS allow_access,
-    (xpath('/text()', years))[1]::text::int AS past_year,
-    (xpath('/text()', aaccess))[1]::text::char(1) AS future_year
-INTO var_AllowAccess, var_PastYear, var_FutureYear
-FROM xml_data;
-</sql>
-
-<notes>
-1. We use a CTE (WITH clause) to extract the XML elements using xpath() function.
-2. unnest() is used to handle potential multiple elements (though in this case, we expect single values).
-3. We use COALESCE to provide a default value of 'Y' for allow_access if it's not present in the XML.
-4. The extracted values are cast to the appropriate data types (char(1) for allow_access and future_year, int for past_year).
-5. We use SELECT INTO to assign the values to the variables var_AllowAccess, var_PastYear, and var_FutureYear.
-6. This assumes that var_PastRosterVisibility is already declared as an XML type variable.
-
-This PostgreSQL code achieves the same result as the original T-SQL code, extracting values from the XML and assigning them to variables.
-</notes>
-
-Action Item: 2 of 37
--------------------------
-<sctComment>
-	/*	[7708 - Severity CRITICAL - DMS SC can't convert the usage of the unsupported XML.VALUE(VARCHAR,VARCHAR) data type. Convert your source code manually., 7708 - Severity CRITICAL - DMS SC can't convert the usage of the unsupported XML.VALUE(VARCHAR,VARCHAR) data type. Convert your source code manually., 7708 - Severity CRITICAL - DMS SC can't convert the usage of the unsupported XML.VALUE(VARCHAR,VARCHAR) data type. Convert your source code manually., 7708 - Severity CRITICAL - DMS SC can't convert the usage of the unsupported XML.VALUE(VARCHAR,VARCHAR) data type. Convert your source code manually., 7708 - Severity CRITICAL - DMS SC can't convert the usage of the unsupported XML.VALUE(VARCHAR,VARCHAR) data type. Convert your source code manually., 7708 - Severity CRITICAL - DMS SC can't convert the usage of the unsupported XML.VALUE(VARCHAR,VARCHAR) data type. Convert your source code manually., 7708 - Severity CRITICAL - DMS SC can't convert the usage of the unsupported XML.VALUE(VARCHAR,VARCHAR) data type. Convert your source code manually., 7708 - Severity CRITICAL - DMS SC can't convert the usage of the unsupported XML.VALUE(VARCHAR,VARCHAR) data type. Convert your source code manually., 7708 - Severity CRITICAL - DMS SC can't convert the usage of the unsupported XML.VALUE(VARCHAR,VARCHAR) data type. Convert your source code manually., 7708 - Severity CRITICAL - DMS SC can't convert the usage of the unsupported XML.VALUE(VARCHAR,VARCHAR) data type. Convert your source code manually., 7708 - Severity CRITICAL - DMS SC can't convert the usage of the unsupported XML.VALUE(VARCHAR,VARCHAR) data type. Convert your source code manually., 7708 - Severity CRITICAL - DMS SC can't convert the usage of the unsupported XML.VALUE(VARCHAR,VARCHAR) data type. Convert your source code manually., 7708 - Severity CRITICAL - DMS SC can't convert the usage of the unsupported XML.VALUE(VARCHAR,VARCHAR) data type. Convert your source code manually., 7708 - Severity CRITICAL - DMS SC can't convert the usage of the unsupported XML.VALUE(VARCHAR,VARCHAR) data type. Convert your source code manually., 7708 - Severity CRITICAL - DMS SC can't convert the usage of the unsupported XML.VALUE(VARCHAR,VARCHAR) data type. Convert your source code manually., 7708 - Severity CRITICAL - DMS SC can't convert the usage of the unsupported XML.VALUE(VARCHAR,VARCHAR) data type. Convert your source code manually., 7708 - Severity CRITICAL - DMS SC can't convert the usage of the unsupported XML.VALUE(VARCHAR,VARCHAR) data type. Convert your source code manually., 7708 - Severity CRITICAL - DMS SC can't convert the usage of the unsupported XML.VALUE(VARCHAR,VARCHAR) data type. Convert your source code manually., 7708 - Severity CRITICAL - DMS SC can't convert the usage of the unsupported XML.VALUE(VARCHAR,VARCHAR) data type. Convert your source code manually., 7708 - Severity CRITICAL - DMS SC can't convert the usage of the unsupported XML.VALUE(VARCHAR,VARCHAR) data type. Convert your source code manually., 7708 - Severity CRITICAL - DMS SC can't convert the usage of the unsupported XML.VALUE(VARCHAR,VARCHAR) data type. Convert your source code manually., 7708 - Severity CRITICAL - DMS SC can't convert the usage of the unsupported XML.VALUE(VARCHAR,VARCHAR) data type. Convert your source code manually., 7708 - Severity CRITICAL - DMS SC can't convert the usage of the unsupported XML.NODES(VARCHAR) data type. Convert your source code manually.]	insert into @AllTypeValues			select				objNode.value('RT[1]', 'varchar(100)'), -- ReportType				objNode.value('RYID[1]', 'int') , -- RosterYearID				objNode.value('RYN[1]', 'varchar(100)') , -- RosterYearName				objNode.value('RDSID[1]', 'int') , -- RosterDataSetID				objNode.value('RDSN[1]', 'varchar(100)') , -- RosterDataSetName				objNode.value('SYID[1]', 'int') , -- SchoolYearID				objNode.value('SYN[1]', 'varchar(100)') , -- SchoolYearName				objNode.value('COLID[1]', 'varchar(100)') , -- CollectionID				objNode.value('COLN[1]', 'varchar(100)'), -- CollectionName				objNode.value('ALID[1]', 'int') , -- AssessmentLevel				objNode.value('ALN[1]', 'varchar(100)') , -- AssessmentLevelName				objNode.value('TID[1]', 'int') , -- TeacherID				objNode.value('TN[1]', 'varchar(100)'), -- TeacherName				objNode.value('CID[1]', 'int') , -- CampusID				objNode.value('CN[1]', 'varchar(100)'), -- CampusName				objNode.value('NID[1]', 'int') , -- NetworkID				objNode.value('NN[1]', 'varchar(100)'), -- NetworkName				objNode.value('SBID[1]', 'int') , -- SubjectID				objNode.value('SBN[1]', 'varchar(100)') , -- SubjectName				objNode.value('AID[1]', 'int') , -- AssessmentID				objNode.value('AN[1]', 'varchar(200)'), -- AssessmentName				objNode.value('URCID[1]', 'int') -- UserRoleCampusID				from				@SettingXML.nodes('/Data/Type') nodeset(objNode)	*/
-</sctComment>
-
-	To convert this T-SQL code that uses XML operations to PostgreSQL 16 compatible code, we need to use PostgreSQL's XML functions. Here's the equivalent PostgreSQL code:
-
-<sql>
-INSERT INTO alltypevalues$appreportdefaultfilters (rt, ryid, ryn, rdsid, rdsn, syid, syn, colid, coln, alid, aln, tid, tn, cid, cn, nid, nn, sbid, sbn, aid, an, urcid)
-SELECT 
-    (xpath('/Type/RT/text()', type_node))[1]::varchar(100) AS rt,
-    (xpath('/Type/RYID/text()', type_node))[1]::int AS ryid,
-    (xpath('/Type/RYN/text()', type_node))[1]::varchar(100) AS ryn,
-    (xpath('/Type/RDSID/text()', type_node))[1]::int AS rdsid,
-    (xpath('/Type/RDSN/text()', type_node))[1]::varchar(100) AS rdsn,
-    (xpath('/Type/SYID/text()', type_node))[1]::int AS syid,
-    (xpath('/Type/SYN/text()', type_node))[1]::varchar(100) AS syn,
-    (xpath('/Type/COLID/text()', type_node))[1]::varchar(100) AS colid,
-    (xpath('/Type/COLN/text()', type_node))[1]::varchar(100) AS coln,
-    (xpath('/Type/ALID/text()', type_node))[1]::int AS alid,
-    (xpath('/Type/ALN/text()', type_node))[1]::varchar(100) AS aln,
-    (xpath('/Type/TID/text()', type_node))[1]::int AS tid,
-    (xpath('/Type/TN/text()', type_node))[1]::varchar(100) AS tn,
-    (xpath('/Type/CID/text()', type_node))[1]::int AS cid,
-    (xpath('/Type/CN/text()', type_node))[1]::varchar(100) AS cn,
-    (xpath('/Type/NID/text()', type_node))[1]::int AS nid,
-    (xpath('/Type/NN/text()', type_node))[1]::varchar(100) AS nn,
-    (xpath('/Type/SBID/text()', type_node))[1]::int AS sbid,
-    (xpath('/Type/SBN/text()', type_node))[1]::varchar(100) AS sbn,
-    (xpath('/Type/AID/text()', type_node))[1]::int AS aid,
-    (xpath('/Type/AN/text()', type_node))[1]::varchar(200) AS an,
-    (xpath('/Type/URCID/text()', type_node))[1]::int AS urcid
-FROM 
-    unnest(xpath('/Data/Type', var_SettingXML::xml)) AS type_node;
-</sql>
-
-<notes>
-1. We use the `xpath()` function to extract values from the XML structure. This replaces the `value()` method used in SQL Server.
-2. The `nodes()` method is replaced by `unnest(xpath())` to iterate over each `Type` node in the XML.
-3. We cast the `var_SettingXML` to XML type explicitly, as it should be defined as XML in PostgreSQL.
-4. The `[1]` index is used to get the first (and presumably only) value returned by `xpath()`.
-5. We cast each extracted value to its appropriate data type.
-6. This assumes that `alltypevalues$appreportdefaultfilters` table has already been created with the correct structure.
-7. If any of the XML elements are optional and might not exist, you may want to add `COALESCE()` to provide default values.
-
-This PostgreSQL code achieves the same result as the original T-SQL code, extracting values from the XML structure and inserting them into the `alltypevalues$appreportdefaultfilters` table.
-</notes>
-
-Action Item: 3 of 37
--------------------------
-<sctComment>
-	/*	[7672 - Severity CRITICAL - PostgreSQL doesn't support EXECUTE statements that run a character string. Convert your source code manually.]	exec(@RosterQuery)	*/
-</sctComment>
-
-	To convert the T-SQL EXECUTE statement to PostgreSQL 16 compatible code, we need to use the EXECUTE function with format() for dynamic SQL execution. Here's the equivalent PostgreSQL code:
-
-<sql>
-EXECUTE format('%s', var_RosterQuery);
-</sql>
-
-<notes>
-1. In PostgreSQL, we use the EXECUTE function to run dynamic SQL.
-2. The format() function is used to safely handle the dynamic SQL string, preventing SQL injection.
-3. var_RosterQuery should contain the full SQL query as a string.
-4. This approach assumes that var_RosterQuery is properly constructed earlier in the code with all necessary parameters and conditions.
-5. If var_RosterQuery contains any parameters that need to be passed dynamically, you would use additional arguments in the format() function, like this:
-   EXECUTE format('%s', var_RosterQuery, param1, param2, ...);
-6. Make sure that all variables used in var_RosterQuery are properly declared and set before this execution.
-7. If the query is expected to return results, you might need to use EXECUTE ... INTO or create a temporary table to store the results, depending on how they are used later in the code.
-
-This PostgreSQL code achieves the same result as the original T-SQL EXECUTE statement, running the dynamic SQL contained in var_RosterQuery.
-</notes>
-
-Action Item: 4 of 37
--------------------------
-<sctComment>
-	/*	[7672 - Severity CRITICAL - PostgreSQL doesn't support EXECUTE statements that run a character string. Convert your source code manually.]	exec (@StudentGrpQuery)	*/
-</sctComment>
-
-	To convert the T-SQL EXECUTE statement for the StudentGrpQuery to PostgreSQL 16 compatible code, we need to use the EXECUTE function with format(). Here's the equivalent PostgreSQL code:
-
-<sql>
-EXECUTE format('%s', var_StudentGrpQuery);
-</sql>
-
-<notes>
-1. In PostgreSQL, we use the EXECUTE function to run dynamic SQL.
-2. The format() function is used to safely handle the dynamic SQL string, preventing SQL injection.
-3. var_StudentGrpQuery should contain the full SQL query as a string.
-4. This approach assumes that var_StudentGrpQuery is properly constructed earlier in the code with all necessary parameters and conditions.
-5. If var_StudentGrpQuery contains any parameters that need to be passed dynamically, you would use additional arguments in the format() function, like this:
-   EXECUTE format('%s', var_StudentGrpQuery, param1, param2, ...);
-6. Make sure that all variables used in var_StudentGrpQuery are properly declared and set before this execution.
-7. If the query is expected to return results, you might need to use EXECUTE ... INTO or create a temporary table to store the results, depending on how they are used later in the code.
-8. In the context of this procedure, it appears that var_StudentGrpQuery is inserting data into a temporary table (#RosterStudents). In PostgreSQL, you would need to ensure that this temporary table is created before executing this query.
-
-This PostgreSQL code achieves the same result as the original T-SQL EXECUTE statement, running the dynamic SQL contained in var_StudentGrpQuery.
-</notes>
-
-Action Item: 5 of 37
--------------------------
-<sctComment>
-	/*	[7672 - Severity CRITICAL - PostgreSQL doesn't support EXECUTE statements that run a character string. Convert your source code manually.]	exec(@RosterQuery)	*/
-</sctComment>
-
-	To convert the T-SQL EXECUTE statement for the RosterQuery to PostgreSQL 16 compatible code, we need to use the EXECUTE function with format(). Here's the equivalent PostgreSQL code:
-
-<sql>
-EXECUTE format('%s', var_RosterQuery);
-</sql>
-
-<notes>
-1. In PostgreSQL, we use the EXECUTE function to run dynamic SQL.
-2. The format() function is used to safely handle the dynamic SQL string, preventing SQL injection.
-3. var_RosterQuery should contain the full SQL query as a string.
-4. This approach assumes that var_RosterQuery is properly constructed earlier in the code with all necessary parameters and conditions.
-5. If var_RosterQuery contains any parameters that need to be passed dynamically, you would use additional arguments in the format() function, like this:
-   EXECUTE format('%s', var_RosterQuery, param1, param2, ...);
-6. Make sure that all variables used in var_RosterQuery are properly declared and set before this execution.
-7. If the query is expected to return results, you might need to use EXECUTE ... INTO or create a temporary table to store the results, depending on how they are used later in the code.
-8. In the context of this procedure, it appears that var_RosterQuery is inserting data into a temporary table (#RosterStudents). In PostgreSQL, you would need to ensure that this temporary table is created before executing this query.
-
-This PostgreSQL code achieves the same result as the original T-SQL EXECUTE statement, running the dynamic SQL contained in var_RosterQuery.
-</notes>
-
-Action Item: 6 of 37
--------------------------
-<sctComment>
-	/*	[7672 - Severity CRITICAL - PostgreSQL doesn't support EXECUTE statements that run a character string. Convert your source code manually.]	exec (@ResultQuery)	*/
-</sctComment>
-
-	To convert the T-SQL EXECUTE statement for the ResultQuery to PostgreSQL 16 compatible code, we need to use the EXECUTE function with format(). Here's the equivalent PostgreSQL code:
-
-<sql>
-EXECUTE format('%s', var_ResultQuery);
-</sql>
-
-<notes>
-1. In PostgreSQL, we use the EXECUTE function to run dynamic SQL.
-2. The format() function is used to safely handle the dynamic SQL string, preventing SQL injection.
-3. var_ResultQuery should contain the full SQL query as a string.
-4. This approach assumes that var_ResultQuery is properly constructed earlier in the code with all necessary parameters and conditions.
-5. If var_ResultQuery contains any parameters that need to be passed dynamically, you would use additional arguments in the format() function, like this:
-   EXECUTE format('%s', var_ResultQuery, param1, param2, ...);
-6. Make sure that all variables used in var_ResultQuery are properly declared and set before this execution.
-7. If the query is expected to return results, you might need to use EXECUTE ... INTO or create a temporary table to store the results, depending on how they are used later in the code.
-8. In the context of this procedure, it appears that var_ResultQuery is inserting data into temporary tables (like #tmpAssessments). In PostgreSQL, you would need to ensure that these temporary tables are created before executing this query.
-9. If the query modifies data, you may need to add PERFORM before the EXECUTE statement to explicitly discard any results.
-
-This PostgreSQL code achieves the same result as the original T-SQL EXECUTE statement, running the dynamic SQL contained in var_ResultQuery.
-</notes>
-
-Action Item: 7 of 37
--------------------------
-<sctComment>
-	/*	[7672 - Severity CRITICAL - PostgreSQL doesn't support EXECUTE statements that run a character string. Convert your source code manually.]	exec(@RosterQuery)	*/
-</sctComment>
-
-	To convert the T-SQL EXECUTE statement for the RosterQuery to PostgreSQL 16 compatible code, we need to use the EXECUTE function with format(). Here's the equivalent PostgreSQL code:
-
-<sql>
-EXECUTE format('%s', var_RosterQuery);
-</sql>
-
-<notes>
-1. In PostgreSQL, we use the EXECUTE function to run dynamic SQL.
-2. The format() function is used to safely handle the dynamic SQL string, preventing SQL injection.
-3. var_RosterQuery should contain the full SQL query as a string.
-4. This approach assumes that var_RosterQuery is properly constructed earlier in the code with all necessary parameters and conditions.
-5. If var_RosterQuery contains any parameters that need to be passed dynamically, you would use additional arguments in the format() function, like this:
-   EXECUTE format('%s', var_RosterQuery, param1, param2, ...);
-6. Make sure that all variables used in var_RosterQuery are properly declared and set before this execution.
-7. If the query is expected to return results, you might need to use EXECUTE ... INTO or create a temporary table to store the results, depending on how they are used later in the code.
-8. In the context of this procedure, it appears that var_RosterQuery is inserting data into a temporary table (#RosterStudents). In PostgreSQL, you would need to ensure that this temporary table is created before executing this query.
-9. If the query modifies data (which it does in this case, as it's an INSERT), you should use PERFORM before the EXECUTE statement to explicitly discard any results:
-   PERFORM EXECUTE format('%s', var_RosterQuery);
-
-This PostgreSQL code achieves the same result as the original T-SQL EXECUTE statement, running the dynamic SQL contained in var_RosterQuery to insert data into the temporary table.
-</notes>
-
-Action Item: 8 of 37
--------------------------
-<sctComment>
-	/*	[7672 - Severity CRITICAL - PostgreSQL doesn't support EXECUTE statements that run a character string. Convert your source code manually.]	exec (@StudentGrpQuery)	*/
-</sctComment>
-
-	To convert the T-SQL EXECUTE statement for the StudentGrpQuery to PostgreSQL 16 compatible code, we need to use the EXECUTE function with format(). Here's the equivalent PostgreSQL code:
-
-<sql>
-EXECUTE format('%s', var_StudentGrpQuery);
-</sql>
-
-<notes>
-1. In PostgreSQL, we use the EXECUTE function to run dynamic SQL.
-2. The format() function is used to safely handle the dynamic SQL string, preventing SQL injection.
-3. var_StudentGrpQuery should contain the full SQL query as a string.
-4. This approach assumes that var_StudentGrpQuery is properly constructed earlier in the code with all necessary parameters and conditions.
-5. If var_StudentGrpQuery contains any parameters that need to be passed dynamically, you would use additional arguments in the format() function, like this:
-   EXECUTE format('%s', var_StudentGrpQuery, param1, param2, ...);
-6. Make sure that all variables used in var_StudentGrpQuery are properly declared and set before this execution.
-7. If the query is expected to return results, you might need to use EXECUTE ... INTO or create a temporary table to store the results, depending on how they are used later in the code.
-8. In the context of this procedure, it appears that var_StudentGrpQuery is inserting data into a temporary table (#RosterStudents). In PostgreSQL, you would need to ensure that this temporary table is created before executing this query.
-9. If the query modifies data (which it does in this case, as it's an INSERT), you should use PERFORM before the EXECUTE statement to explicitly discard any results:
-   PERFORM EXECUTE format('%s', var_StudentGrpQuery);
-
-This PostgreSQL code achieves the same result as the original T-SQL EXECUTE statement, running the dynamic SQL contained in var_StudentGrpQuery to insert data into the temporary table.
-</notes>
-
-Action Item: 9 of 37
--------------------------
-<sctComment>
-	/*	[7672 - Severity CRITICAL - PostgreSQL doesn't support EXECUTE statements that run a character string. Convert your source code manually.]	exec(@RosterQuery)	*/
-</sctComment>
-
-	To convert the T-SQL EXECUTE statement for the RosterQuery to PostgreSQL 16 compatible code, we need to use the EXECUTE function with format(). Here's the equivalent PostgreSQL code:
-
-<sql>
-EXECUTE format('%s', var_RosterQuery);
-</sql>
-
-<notes>
-1. In PostgreSQL, we use the EXECUTE function to run dynamic SQL.
-2. The format() function is used to safely handle the dynamic SQL string, preventing SQL injection.
-3. var_RosterQuery should contain the full SQL query as a string.
-4. This approach assumes that var_RosterQuery is properly constructed earlier in the code with all necessary parameters and conditions.
-5. If var_RosterQuery contains any parameters that need to be passed dynamically, you would use additional arguments in the format() function, like this:
-   EXECUTE format('%s', var_RosterQuery, param1, param2, ...);
-6. Make sure that all variables used in var_RosterQuery are properly declared and set before this execution.
-7. If the query is expected to return results, you might need to use EXECUTE ... INTO or create a temporary table to store the results, depending on how they are used later in the code.
-8. In the context of this procedure, it appears that var_RosterQuery is inserting data into a temporary table (#RosterStudents). In PostgreSQL, you would need to ensure that this temporary table is created before executing this query.
-9. If the query modifies data (which it does in this case, as it's an INSERT), you should use PERFORM before the EXECUTE statement to explicitly discard any results:
-   PERFORM EXECUTE format('%s', var_RosterQuery);
-
-This PostgreSQL code achieves the same result as the original T-SQL EXECUTE statement, running the dynamic SQL contained in var_RosterQuery to insert data into the temporary table.
-</notes>
-
-Action Item: 10 of 37
--------------------------
-<sctComment>
-	/*	[7672 - Severity CRITICAL - PostgreSQL doesn't support EXECUTE statements that run a character string. Convert your source code manually.]	exec(@RosterQuery)	*/
-</sctComment>
-
-	To convert the T-SQL EXECUTE statement for the RosterQuery to PostgreSQL 16 compatible code, we need to use the EXECUTE function with format(). Here's the equivalent PostgreSQL code:
-
-<sql>
-EXECUTE format('%s', var_RosterQuery);
-</sql>
-
-<notes>
-1. In PostgreSQL, we use the EXECUTE function to run dynamic SQL.
-2. The format() function is used to safely handle the dynamic SQL string, preventing SQL injection.
-3. var_RosterQuery should contain the full SQL query as a string.
-4. This approach assumes that var_RosterQuery is properly constructed earlier in the code with all necessary parameters and conditions.
-5. If var_RosterQuery contains any parameters that need to be passed dynamically, you would use additional arguments in the format() function, like this:
-   EXECUTE format('%s', var_RosterQuery, param1, param2, ...);
-6. Make sure that all variables used in var_RosterQuery are properly declared and set before this execution.
-7. If the query is expected to return results, you might need to use EXECUTE ... INTO or create a temporary table to store the results, depending on how they are used later in the code.
-8. In the context of this procedure, it appears that var_RosterQuery is inserting data into a temporary table (#RosterStudents). In PostgreSQL, you would need to ensure that this temporary table is created before executing this query.
-9. Since the query modifies data (it's an INSERT), you should use PERFORM to explicitly discard any results:
-   PERFORM EXECUTE format('%s', var_RosterQuery);
-
-This PostgreSQL code achieves the same result as the original T-SQL EXECUTE statement, running the dynamic SQL contained in var_RosterQuery to insert data into the temporary table.
-</notes>
-
-Action Item: 11 of 37
--------------------------
-<sctComment>
-	/*	[7672 - Severity CRITICAL - PostgreSQL doesn't support EXECUTE statements that run a character string. Convert your source code manually.]	exec (@StudentGrpQuery)	*/
-</sctComment>
-
-	To convert the T-SQL EXECUTE statement for the StudentGrpQuery to PostgreSQL 16 compatible code, we need to use the EXECUTE function with format(). Here's the equivalent PostgreSQL code:
-
-<sql>
-EXECUTE format('%s', var_StudentGrpQuery);
-</sql>
-
-<notes>
-1. In PostgreSQL, we use the EXECUTE function to run dynamic SQL.
-2. The format() function is used to safely handle the dynamic SQL string, preventing SQL injection.
-3. var_StudentGrpQuery should contain the full SQL query as a string.
-4. This approach assumes that var_StudentGrpQuery is properly constructed earlier in the code with all necessary parameters and conditions.
-5. If var_StudentGrpQuery contains any parameters that need to be passed dynamically, you would use additional arguments in the format() function, like this:
-   EXECUTE format('%s', var_StudentGrpQuery, param1, param2, ...);
-6. Make sure that all variables used in var_StudentGrpQuery are properly declared and set before this execution.
-7. If the query is expected to return results, you might need to use EXECUTE ... INTO or create a temporary table to store the results, depending on how they are used later in the code.
-8. In the context of this procedure, it appears that var_StudentGrpQuery is inserting data into a temporary table (#RosterStudents). In PostgreSQL, you would need to ensure that this temporary table is created before executing this query.
-9. Since the query modifies data (it's an INSERT), you should use PERFORM to explicitly discard any results:
-   PERFORM EXECUTE format('%s', var_StudentGrpQuery);
-
-This PostgreSQL code achieves the same result as the original T-SQL EXECUTE statement, running the dynamic SQL contained in var_StudentGrpQuery to insert data into the temporary table.
-</notes>
-
-Action Item: 12 of 37
--------------------------
-<sctComment>
-	/*	[7672 - Severity CRITICAL - PostgreSQL doesn't support EXECUTE statements that run a character string. Convert your source code manually.]	exec(@RosterQuery)	*/
-</sctComment>
-
-	To convert the T-SQL EXECUTE statement for the RosterQuery to PostgreSQL 16 compatible code, we need to use the EXECUTE function with format(). Here's the equivalent PostgreSQL code:
-
-<sql>
-EXECUTE format('%s', var_RosterQuery);
-</sql>
-
-<notes>
-1. In PostgreSQL, we use the EXECUTE function to run dynamic SQL.
-2. The format() function is used to safely handle the dynamic SQL string, preventing SQL injection.
-3. var_RosterQuery should contain the full SQL query as a string.
-4. This approach assumes that var_RosterQuery is properly constructed earlier in the code with all necessary parameters and conditions.
-5. If var_RosterQuery contains any parameters that need to be passed dynamically, you would use additional arguments in the format() function, like this:
-   EXECUTE format('%s', var_RosterQuery, param1, param2, ...);
-6. Make sure that all variables used in var_RosterQuery are properly declared and set before this execution.
-7. If the query is expected to return results, you might need to use EXECUTE ... INTO or create a temporary table to store the results, depending on how they are used later in the code.
-8. In the context of this procedure, it appears that var_RosterQuery is inserting data into a temporary table (#RosterStudents). In PostgreSQL, you would need to ensure that this temporary table is created before executing this query.
-9. Since the query modifies data (it's an INSERT), you should use PERFORM to explicitly discard any results:
-   PERFORM EXECUTE format('%s', var_RosterQuery);
-
-This PostgreSQL code achieves the same result as the original T-SQL EXECUTE statement, running the dynamic SQL contained in var_RosterQuery to insert data into the temporary table.
-</notes>
-
-Action Item: 13 of 37
--------------------------
-<sctComment>
-	/*	[7672 - Severity CRITICAL - PostgreSQL doesn't support EXECUTE statements that run a character string. Convert your source code manually.]	exec (@StudentGrpQuery)	*/
-</sctComment>
-
-	To convert the T-SQL EXECUTE statement for the StudentGrpQuery to PostgreSQL 16 compatible code, we need to use the EXECUTE function with format(). Here's the equivalent PostgreSQL code:
-
-<sql>
-EXECUTE format('%s', var_StudentGrpQuery);
-</sql>
-
-<notes>
-1. In PostgreSQL, we use the EXECUTE function to run dynamic SQL.
-2. The format() function is used to safely handle the dynamic SQL string, preventing SQL injection.
-3. var_StudentGrpQuery should contain the full SQL query as a string.
-4. This approach assumes that var_StudentGrpQuery is properly constructed earlier in the code with all necessary parameters and conditions.
-5. If var_StudentGrpQuery contains any parameters that need to be passed dynamically, you would use additional arguments in the format() function, like this:
-   EXECUTE format('%s', var_StudentGrpQuery, param1, param2, ...);
-6. Make sure that all variables used in var_StudentGrpQuery are properly declared and set before this execution.
-7. If the query is expected to return results, you might need to use EXECUTE ... INTO or create a temporary table to store the results, depending on how they are used later in the code.
-8. In the context of this procedure, it appears that var_StudentGrpQuery is inserting data into a temporary table (#RosterStudents). In PostgreSQL, you would need to ensure that this temporary table is created before executing this query.
-9. Since the query modifies data (it's an INSERT), you should use PERFORM to explicitly discard any results:
-   PERFORM EXECUTE format('%s', var_StudentGrpQuery);
-
-This PostgreSQL code achieves the same result as the original T-SQL EXECUTE statement, running the dynamic SQL contained in var_StudentGrpQuery to insert data into the temporary table.
-</notes>
-
-Action Item: 14 of 37
--------------------------
-<sctComment>
-	/*	[7672 - Severity CRITICAL - PostgreSQL doesn't support EXECUTE statements that run a character string. Convert your source code manually.]	exec(@RosterQuery)	*/
-</sctComment>
-
-	To convert the T-SQL EXECUTE statement for the RosterQuery to PostgreSQL 16 compatible code, we need to use the EXECUTE function with format(). Here's the equivalent PostgreSQL code:
-
-<sql>
-EXECUTE format('%s', var_RosterQuery);
-</sql>
-
-<notes>
-1. In PostgreSQL, we use the EXECUTE function to run dynamic SQL.
-2. The format() function is used to safely handle the dynamic SQL string, preventing SQL injection.
-3. var_RosterQuery should contain the full SQL query as a string.
-4. This approach assumes that var_RosterQuery is properly constructed earlier in the code with all necessary parameters and conditions.
-5. If var_RosterQuery contains any parameters that need to be passed dynamically, you would use additional arguments in the format() function, like this:
-   EXECUTE format('%s', var_RosterQuery, param1, param2, ...);
-6. Make sure that all variables used in var_RosterQuery are properly declared and set before this execution.
-7. If the query is expected to return results, you might need to use EXECUTE ... INTO or create a temporary table to store the results, depending on how they are used later in the code.
-8. In the context of this procedure, it appears that var_RosterQuery is inserting data into a temporary table (#RosterStudents). In PostgreSQL, you would need to ensure that this temporary table is created before executing this query.
-9. Since the query modifies data (it's an INSERT), you should use PERFORM to explicitly discard any results:
-   PERFORM EXECUTE format('%s', var_RosterQuery);
-
-This PostgreSQL code achieves the same result as the original T-SQL EXECUTE statement, running the dynamic SQL contained in var_RosterQuery to insert data into the temporary table.
-</notes>
-
-Action Item: 15 of 37
--------------------------
-<sctComment>
-	/*	[7672 - Severity CRITICAL - PostgreSQL doesn't support EXECUTE statements that run a character string. Convert your source code manually.]	exec (@StudentGrpQuery)	*/
-</sctComment>
-
-	To convert the T-SQL EXECUTE statement for the StudentGrpQuery to PostgreSQL 16 compatible code, we need to use the EXECUTE function with format(). Here's the equivalent PostgreSQL code:
-
-<sql>
-EXECUTE format('%s', var_StudentGrpQuery);
-</sql>
-
-<notes>
-1. In PostgreSQL, we use the EXECUTE function to run dynamic SQL.
-2. The format() function is used to safely handle the dynamic SQL string, preventing SQL injection.
-3. var_StudentGrpQuery should contain the full SQL query as a string.
-4. This approach assumes that var_StudentGrpQuery is properly constructed earlier in the code with all necessary parameters and conditions.
-5. If var_StudentGrpQuery contains any parameters that need to be passed dynamically, you would use additional arguments in the format() function, like this:
-   EXECUTE format('%s', var_StudentGrpQuery, param1, param2, ...);
-6. Make sure that all variables used in var_StudentGrpQuery are properly declared and set before this execution.
-7. If the query is expected to return results, you might need to use EXECUTE ... INTO or create a temporary table to store the results, depending on how they are used later in the code.
-8. In the context of this procedure, it appears that var_StudentGrpQuery is inserting data into a temporary table (#RosterStudents). In PostgreSQL, you would need to ensure that this temporary table is created before executing this query.
-9. Since the query modifies data (it's an INSERT), you should use PERFORM to explicitly discard any results:
-   PERFORM EXECUTE format('%s', var_StudentGrpQuery);
-
-This PostgreSQL code achieves the same result as the original T-SQL EXECUTE statement, running the dynamic SQL contained in var_StudentGrpQuery to insert data into the temporary table.
-</notes>
-
-Action Item: 16 of 37
--------------------------
-<sctComment>
-	/*	[7708 - Severity CRITICAL - DMS SC can't convert the usage of the unsupported XML.VALUE(VARCHAR,VARCHAR) data type. Convert your source code manually., 7708 - Severity CRITICAL - DMS SC can't convert the usage of the unsupported XML.NODES(VARCHAR) data type. Convert your source code manually.]	insert into #l4wTemplateTable			select distinct item newTemplateID from			(				select				   objNode.value('@ID', 'varchar(max)') TemplateID				from				 @L4WMenuXML.nodes('/L4WMenuPGM/L4WSubject/Template') nodeset(objNode)				) A cross apply dbo.fn_split(TemplateID,',')			order by newTemplateID asc	*/
-</sctComment>
-
-	To convert this T-SQL code to PostgreSQL 16 compatible code, we need to use PostgreSQL's XML functions and a custom function to split strings. Here's the equivalent PostgreSQL code:
-
-<sql>
-INSERT INTO t$l4wtemplatetable (templateid)
-SELECT DISTINCT split_part.item::integer AS newtemplateid
-FROM (
-    SELECT (xpath('/L4WMenuPGM/L4WSubject/Template/@ID', var_L4WMenuXML))[i] AS templateid
-    FROM generate_series(1, xpath_table('/L4WMenuPGM/L4WSubject/Template', var_L4WMenuXML, 'x')::text[])) AS subquery,
-    LATERAL unnest(string_to_array(subquery.templateid::text, ',')) AS split_part(item)
-ORDER BY split_part.item::integer ASC;
-</sql>
-
-<dependency>
-CREATE OR REPLACE FUNCTION xpath_table(xpath text, xml xml, result_type text)
-RETURNS SETOF text[] AS $$
-DECLARE
-    nodes xml[];
-    node xml;
-    result text[];
-BEGIN
-    nodes := xpath(xpath, xml);
-    FOREACH node IN ARRAY nodes
-    LOOP
-        result := array_append(result, (xpath('.', node))[1]::text);
-    END LOOP;
-    RETURN QUERY SELECT result;
-END;
-$$ LANGUAGE plpgsql;
-</dependency>
-
-<notes>
-1. This code assumes that var_L4WMenuXML is an XML type variable containing the L4WMenuPGM XML data.
-2. We use xpath to extract the ID attributes from the Template elements.
-3. The generate_series function is used to iterate over the extracted IDs.
-4. We use string_to_array and unnest to split the comma-separated IDs into individual values.
-5. The DISTINCT keyword ensures unique templateids.
-6. The result is cast to integer and ordered ascending.
-7. A custom function xpath_table is created to mimic the behavior of SQL Server's nodes function.
-8. This solution doesn't require a separate split function like fn_split in SQL Server.
-9. Make sure to create the xpath_table function before running the main query.
-10. Adjust the data types if necessary, depending on your table structure.
-</notes>
-
-Action Item: 17 of 37
--------------------------
-<sctComment>
-	/*	[7672 - Severity CRITICAL - PostgreSQL doesn't support EXECUTE statements that run a character string. Convert your source code manually.]	exec(@Query)	*/
-</sctComment>
-
-	To convert this T-SQL EXECUTE statement to PostgreSQL 16 compatible code, we need to use the EXECUTE function with format(). This approach allows for dynamic SQL execution while providing better security against SQL injection. Here's the equivalent PostgreSQL code:
-
-<sql>
-EXECUTE format('%s', var_Query);
-</sql>
-
-<notes>
-1. In PostgreSQL, we use the EXECUTE function to run dynamic SQL.
-2. The format() function is used to safely handle the dynamic SQL string.
-3. var_Query should contain the full SQL statement to be executed.
-4. This method is safer than direct string concatenation as it helps prevent SQL injection.
-5. Make sure that var_Query is properly constructed earlier in the code with all necessary parameters and conditions.
-6. If var_Query contains any parameters that need to be passed dynamically, you should use the full form of EXECUTE with USING clause to pass these parameters safely.
-7. For complex queries with multiple parameters, you might need to adjust the format string and add more arguments to the format() function.
-8. Always ensure that the dynamic SQL in var_Query is properly sanitized and validated before execution to maintain security.
-</notes>
-
-Action Item: 18 of 37
--------------------------
-<sctComment>
-	/*	[7672 - Severity CRITICAL - PostgreSQL doesn't support EXECUTE statements that run a character string. Convert your source code manually.]	exec(@RosterQuery)	*/
-</sctComment>
-
-	To convert this T-SQL EXECUTE statement to PostgreSQL 16 compatible code, we need to use the EXECUTE function with format(). This approach allows for dynamic SQL execution while providing better security against SQL injection. Here's the equivalent PostgreSQL code:
-
-<sql>
-EXECUTE format('%s', var_RosterQuery);
-</sql>
-
-<notes>
-1. In PostgreSQL, we use the EXECUTE function to run dynamic SQL.
-2. The format() function is used to safely handle the dynamic SQL string.
-3. var_RosterQuery should contain the full SQL statement to be executed.
-4. This method is safer than direct string concatenation as it helps prevent SQL injection.
-5. Make sure that var_RosterQuery is properly constructed earlier in the code with all necessary parameters and conditions.
-6. If var_RosterQuery contains any parameters that need to be passed dynamically, you should use the full form of EXECUTE with USING clause to pass these parameters safely.
-7. For complex queries with multiple parameters, you might need to adjust the format string and add more arguments to the format() function.
-8. Always ensure that the dynamic SQL in var_RosterQuery is properly sanitized and validated before execution to maintain security.
-9. If var_RosterQuery involves inserting data into a temporary table, make sure the temporary table is created before executing this statement.
-10. Consider using PREPARE and EXECUTE PREPARED statements for frequently executed dynamic SQL to improve performance.
-</notes>
-
-Action Item: 19 of 37
--------------------------
-<sctComment>
-	/*	[7672 - Severity CRITICAL - PostgreSQL doesn't support EXECUTE statements that run a character string. Convert your source code manually.]	exec (@StudentGrpQuery)	*/
-</sctComment>
-
-	To convert this T-SQL EXECUTE statement to PostgreSQL 16 compatible code, we need to use the EXECUTE function with format(). This approach allows for dynamic SQL execution while providing better security against SQL injection. Here's the equivalent PostgreSQL code:
-
-<sql>
-EXECUTE format('%s', var_StudentGrpQuery);
-</sql>
-
-<notes>
-1. In PostgreSQL, we use the EXECUTE function to run dynamic SQL.
-2. The format() function is used to safely handle the dynamic SQL string.
-3. var_StudentGrpQuery should contain the full SQL statement to be executed.
-4. This method is safer than direct string concatenation as it helps prevent SQL injection.
-5. Make sure that var_StudentGrpQuery is properly constructed earlier in the code with all necessary parameters and conditions.
-6. If var_StudentGrpQuery contains any parameters that need to be passed dynamically, you should use the full form of EXECUTE with USING clause to pass these parameters safely.
-7. For complex queries with multiple parameters, you might need to adjust the format string and add more arguments to the format() function.
-8. Always ensure that the dynamic SQL in var_StudentGrpQuery is properly sanitized and validated before execution to maintain security.
-9. If var_StudentGrpQuery involves inserting data into a temporary table, make sure the temporary table is created before executing this statement.
-10. Consider using PREPARE and EXECUTE PREPARED statements for frequently executed dynamic SQL to improve performance.
-</notes>
-
-Action Item: 20 of 37
--------------------------
-<sctComment>
-	/*	[7672 - Severity CRITICAL - PostgreSQL doesn't support EXECUTE statements that run a character string. Convert your source code manually.]	exec(@RosterQuery)	*/
-</sctComment>
-
-	To convert this T-SQL EXECUTE statement to PostgreSQL 16 compatible code, we need to use the EXECUTE function with format(). This approach allows for dynamic SQL execution while providing better security against SQL injection. Here's the equivalent PostgreSQL code:
-
-<sql>
-EXECUTE format('%s', var_RosterQuery);
-</sql>
-
-<notes>
-1. In PostgreSQL, we use the EXECUTE function to run dynamic SQL.
-2. The format() function is used to safely handle the dynamic SQL string.
-3. var_RosterQuery should contain the full SQL statement to be executed.
-4. This method is safer than direct string concatenation as it helps prevent SQL injection.
-5. Make sure that var_RosterQuery is properly constructed earlier in the code with all necessary parameters and conditions.
-6. If var_RosterQuery contains any parameters that need to be passed dynamically, you should use the full form of EXECUTE with USING clause to pass these parameters safely.
-7. For complex queries with multiple parameters, you might need to adjust the format string and add more arguments to the format() function.
-8. Always ensure that the dynamic SQL in var_RosterQuery is properly sanitized and validated before execution to maintain security.
-9. If var_RosterQuery involves inserting data into a temporary table, make sure the temporary table is created before executing this statement.
-10. Consider using PREPARE and EXECUTE PREPARED statements for frequently executed dynamic SQL to improve performance.
-</notes>
-
-Action Item: 21 of 37
--------------------------
-<sctComment>
-	/*	[7672 - Severity CRITICAL - PostgreSQL doesn't support EXECUTE statements that run a character string. Convert your source code manually.]	exec (@StudentGrpQuery)	*/
-</sctComment>
-
-	To convert this T-SQL EXECUTE statement to PostgreSQL 16 compatible code, we need to use the EXECUTE function with format(). This approach allows for dynamic SQL execution while providing better security against SQL injection. Here's the equivalent PostgreSQL code:
-
-<sql>
-EXECUTE format('%s', var_StudentGrpQuery);
-</sql>
-
-<notes>
-1. In PostgreSQL, we use the EXECUTE function to run dynamic SQL.
-2. The format() function is used to safely handle the dynamic SQL string stored in var_StudentGrpQuery.
-3. var_StudentGrpQuery should contain the full SQL statement to be executed.
-4. This method is safer than direct string concatenation as it helps prevent SQL injection.
-5. Make sure that var_StudentGrpQuery is properly constructed earlier in the code with all necessary parameters and conditions.
-6. If var_StudentGrpQuery contains any parameters that need to be passed dynamically, you should use the full form of EXECUTE with USING clause to pass these parameters safely.
-7. For complex queries with multiple parameters, you might need to adjust the format string and add more arguments to the format() function.
-8. Always ensure that the dynamic SQL in var_StudentGrpQuery is properly sanitized and validated before execution to maintain security.
-9. If var_StudentGrpQuery involves inserting data into a temporary table, make sure the temporary table is created before executing this statement.
-10. Consider using PREPARE and EXECUTE PREPARED statements for frequently executed dynamic SQL to improve performance.
-</notes>
-
-Action Item: 22 of 37
--------------------------
-<sctComment>
-	/*	[7672 - Severity CRITICAL - PostgreSQL doesn't support EXECUTE statements that run a character string. Convert your source code manually.]	exec(@RosterQuery)	*/
-</sctComment>
-
-	To convert this T-SQL EXECUTE statement to PostgreSQL 16 compatible code, we need to use the EXECUTE function with format(). This approach allows for dynamic SQL execution while providing better security against SQL injection. Here's the equivalent PostgreSQL code:
-
-<sql>
-EXECUTE format('%s', var_RosterQuery);
-</sql>
-
-<notes>
-1. In PostgreSQL, we use the EXECUTE function to run dynamic SQL.
-2. The format() function is used to safely handle the dynamic SQL string stored in var_RosterQuery.
-3. var_RosterQuery should contain the full SQL statement to be executed.
-4. This method is safer than direct string concatenation as it helps prevent SQL injection.
-5. Make sure that var_RosterQuery is properly constructed earlier in the code with all necessary parameters and conditions.
-6. If var_RosterQuery contains any parameters that need to be passed dynamically, you should use the full form of EXECUTE with USING clause to pass these parameters safely.
-7. For complex queries with multiple parameters, you might need to adjust the format string and add more arguments to the format() function.
-8. Always ensure that the dynamic SQL in var_RosterQuery is properly sanitized and validated before execution to maintain security.
-9. If var_RosterQuery involves inserting data into a temporary table, make sure the temporary table is created before executing this statement.
-10. Consider using PREPARE and EXECUTE PREPARED statements for frequently executed dynamic SQL to improve performance.
-</notes>
-
-Action Item: 23 of 37
--------------------------
-<sctComment>
-	/*	[7672 - Severity CRITICAL - PostgreSQL doesn't support EXECUTE statements that run a character string. Convert your source code manually.]	exec (@StudentGrpQuery)	*/
-</sctComment>
-
-	To convert this T-SQL EXECUTE statement to PostgreSQL 16 compatible code, we need to use the EXECUTE function with format(). This approach allows for dynamic SQL execution while providing better security against SQL injection. Here's the equivalent PostgreSQL code:
-
-<sql>
-EXECUTE format('%s', var_StudentGrpQuery);
-</sql>
-
-<notes>
-1. In PostgreSQL, we use the EXECUTE function to run dynamic SQL.
-2. The format() function is used to safely handle the dynamic SQL string stored in var_StudentGrpQuery.
-3. var_StudentGrpQuery should contain the full SQL statement to be executed.
-4. This method is safer than direct string concatenation as it helps prevent SQL injection.
-5. Make sure that var_StudentGrpQuery is properly constructed earlier in the code with all necessary parameters and conditions.
-6. If var_StudentGrpQuery contains any parameters that need to be passed dynamically, you should use the full form of EXECUTE with USING clause to pass these parameters safely.
-7. For complex queries with multiple parameters, you might need to adjust the format string and add more arguments to the format() function.
-8. Always ensure that the dynamic SQL in var_StudentGrpQuery is properly sanitized and validated before execution to maintain security.
-9. If var_StudentGrpQuery involves inserting data into a temporary table, make sure the temporary table is created before executing this statement.
-10. Consider using PREPARE and EXECUTE PREPARED statements for frequently executed dynamic SQL to improve performance.
-</notes>
-
-Action Item: 24 of 37
--------------------------
-<sctComment>
-	/*	[7672 - Severity CRITICAL - PostgreSQL doesn't support EXECUTE statements that run a character string. Convert your source code manually.]	exec(@RosterQuery)	*/
-</sctComment>
-
-	To convert this T-SQL EXECUTE statement to PostgreSQL 16 compatible code, we need to use the EXECUTE function with format(). This approach allows for dynamic SQL execution while providing better security against SQL injection. Here's the equivalent PostgreSQL code:
-
-<sql>
-EXECUTE format('%s', var_RosterQuery);
-</sql>
-
-<notes>
-1. In PostgreSQL, we use the EXECUTE function to run dynamic SQL.
-2. The format() function is used to safely handle the dynamic SQL string stored in var_RosterQuery.
-3. var_RosterQuery should contain the full SQL statement to be executed.
-4. This method is safer than direct string concatenation as it helps prevent SQL injection.
-5. Make sure that var_RosterQuery is properly constructed earlier in the code with all necessary parameters and conditions.
-6. If var_RosterQuery contains any parameters that need to be passed dynamically, you should use the full form of EXECUTE with USING clause to pass these parameters safely.
-7. For complex queries with multiple parameters, you might need to adjust the format string and add more arguments to the format() function.
-8. Always ensure that the dynamic SQL in var_RosterQuery is properly sanitized and validated before execution to maintain security.
-9. If var_RosterQuery involves inserting data into a temporary table, make sure the temporary table is created before executing this statement.
-10. Consider using PREPARE and EXECUTE PREPARED statements for frequently executed dynamic SQL to improve performance.
-</notes>
-
-Action Item: 25 of 37
--------------------------
-<sctComment>
-	/*	[7672 - Severity CRITICAL - PostgreSQL doesn't support EXECUTE statements that run a character string. Convert your source code manually.]	exec (@StudentGrpQuery)	*/
-</sctComment>
-
-	To convert this T-SQL EXECUTE statement to PostgreSQL 16 compatible code, we need to use the EXECUTE function with format(). This approach allows for dynamic SQL execution while providing better security against SQL injection. Here's the equivalent PostgreSQL code:
-
-<sql>
-EXECUTE format('%s', var_StudentGrpQuery);
-</sql>
-
-<notes>
-1. In PostgreSQL, we use the EXECUTE function to run dynamic SQL.
-2. The format() function is used to safely handle the dynamic SQL string stored in var_StudentGrpQuery.
-3. var_StudentGrpQuery should contain the full SQL statement to be executed.
-4. This method is safer than direct string concatenation as it helps prevent SQL injection.
-5. Make sure that var_StudentGrpQuery is properly constructed earlier in the code with all necessary parameters and conditions.
-6. If var_StudentGrpQuery contains any parameters that need to be passed dynamically, you should use the full form of EXECUTE with USING clause to pass these parameters safely.
-7. For complex queries with multiple parameters, you might need to adjust the format string and add more arguments to the format() function.
-8. Always ensure that the dynamic SQL in var_StudentGrpQuery is properly sanitized and validated before execution to maintain security.
-9. If var_StudentGrpQuery involves inserting data into a temporary table, make sure the temporary table is created before executing this statement.
-10. Consider using PREPARE and EXECUTE PREPARED statements for frequently executed dynamic SQL to improve performance.
-</notes>
-
-Action Item: 26 of 37
--------------------------
-<sctComment>
-	/*	[7672 - Severity CRITICAL - PostgreSQL doesn't support EXECUTE statements that run a character string. Convert your source code manually.]	exec (@ResultQuery)	*/
-</sctComment>
-
-	To convert this T-SQL EXECUTE statement to PostgreSQL 16 compatible code, we need to use the EXECUTE function with format(). This approach allows for dynamic SQL execution while providing better security against SQL injection. Here's the equivalent PostgreSQL code:
-
-<sql>
-EXECUTE format('%s', var_ResultQuery);
-</sql>
-
-<notes>
-1. In PostgreSQL, we use the EXECUTE function to run dynamic SQL.
-2. The format() function is used to safely handle the dynamic SQL string stored in var_ResultQuery.
-3. var_ResultQuery should contain the full SQL statement to be executed.
-4. This method is safer than direct string concatenation as it helps prevent SQL injection.
-5. Make sure that var_ResultQuery is properly constructed earlier in the code with all necessary parameters and conditions.
-6. If var_ResultQuery contains any parameters that need to be passed dynamically, you should use the full form of EXECUTE with USING clause to pass these parameters safely.
-7. For complex queries with multiple parameters, you might need to adjust the format string and add more arguments to the format() function.
-8. Always ensure that the dynamic SQL in var_ResultQuery is properly sanitized and validated before execution to maintain security.
-9. If var_ResultQuery involves inserting data into a temporary table, make sure the temporary table is created before executing this statement.
-10. Consider using PREPARE and EXECUTE PREPARED statements for frequently executed dynamic SQL to improve performance.
-</notes>
-
-Action Item: 27 of 37
--------------------------
-<sctComment>
-	/*	[7672 - Severity CRITICAL - PostgreSQL doesn't support EXECUTE statements that run a character string. Convert your source code manually.]	exec (@ResultQuery)	*/
-</sctComment>
-
-	To convert this T-SQL EXECUTE statement to PostgreSQL 16 compatible code, we need to use the EXECUTE function with format(). This approach allows for dynamic SQL execution while providing better security against SQL injection. Here's the equivalent PostgreSQL code:
-
-<sql>
-EXECUTE format('%s', var_ResultQuery);
-</sql>
-
-<notes>
-1. In PostgreSQL, we use the EXECUTE function to run dynamic SQL.
-2. The format() function is used to safely handle the dynamic SQL string stored in var_ResultQuery.
-3. var_ResultQuery should contain the full SQL statement to be executed.
-4. This method is safer than direct string concatenation as it helps prevent SQL injection.
-5. Make sure that var_ResultQuery is properly constructed earlier in the code with all necessary parameters and conditions.
-6. If var_ResultQuery contains any parameters that need to be passed dynamically, you should use the USING clause with EXECUTE to pass these parameters safely.
-7. For complex queries with multiple parameters, you might need to adjust the format string and add more arguments to the format() function.
-8. Always ensure that the dynamic SQL in var_ResultQuery is properly sanitized and validated before execution to maintain security.
-9. If var_ResultQuery involves inserting data into a temporary table, make sure the temporary table is created before executing this statement.
-10. Consider using PREPARE and EXECUTE PREPARED statements for frequently executed dynamic SQL to improve performance.
-</notes>
-
-Action Item: 28 of 37
--------------------------
-<sctComment>
-	/*	[7672 - Severity CRITICAL - PostgreSQL doesn't support EXECUTE statements that run a character string. Convert your source code manually.]	EXEC (@RosterSubQuery)	*/
-</sctComment>
-
-	To convert this T-SQL EXECUTE statement to PostgreSQL 16 compatible code, we need to use the EXECUTE function with format(). This approach allows for dynamic SQL execution while providing better security against SQL injection. Here's the equivalent PostgreSQL code:
-
-<sql>
-EXECUTE format('%s', var_RosterSubQuery);
-</sql>
-
-<notes>
-1. In PostgreSQL, we use the EXECUTE function to run dynamic SQL.
-2. The format() function is used to safely handle the dynamic SQL string stored in var_RosterSubQuery.
-3. var_RosterSubQuery should contain the full SQL statement to be executed.
-4. This method is safer than direct string concatenation as it helps prevent SQL injection.
-5. Make sure that var_RosterSubQuery is properly constructed earlier in the code with all necessary parameters and conditions.
-6. If var_RosterSubQuery contains any parameters that need to be passed dynamically, you should use the USING clause with EXECUTE to pass these parameters safely.
-7. For complex queries with multiple parameters, you might need to adjust the format string and add more arguments to the format() function.
-8. Always ensure that the dynamic SQL in var_RosterSubQuery is properly sanitized and validated before execution to maintain security.
-9. If var_RosterSubQuery involves inserting data into a temporary table, make sure the temporary table is created before executing this statement.
-10. Consider using PREPARE and EXECUTE PREPARED statements for frequently executed dynamic SQL to improve performance.
-</notes>
-
-Action Item: 29 of 37
--------------------------
-<sctComment>
-	/*	[7672 - Severity CRITICAL - PostgreSQL doesn't support EXECUTE statements that run a character string. Convert your source code manually.]	EXEC (@RosterSubQuery)	*/
-</sctComment>
-
-	To convert the T-SQL EXECUTE statement to PostgreSQL 16 compatible code, we need to use the EXECUTE function with format(). This approach allows for dynamic SQL execution while providing better security against SQL injection. Here's the equivalent PostgreSQL code:
-
-<sql>
-EXECUTE format('%s', var_RosterSubQuery);
-</sql>
-
-<notes>
-1. In PostgreSQL, we use the EXECUTE function to run dynamic SQL.
-2. The format() function is used to safely handle the dynamic SQL string stored in var_RosterSubQuery.
-3. var_RosterSubQuery should contain the full SQL statement to be executed.
-4. This method is safer than direct string concatenation as it helps prevent SQL injection.
-5. Make sure that var_RosterSubQuery is properly constructed earlier in the code with all necessary parameters and conditions.
-6. If var_RosterSubQuery contains any parameters that need to be passed dynamically, you should use the USING clause with EXECUTE to pass these parameters safely.
-7. For complex queries with multiple parameters, you might need to adjust the format string and add more arguments to the format() function.
-8. Always ensure that the dynamic SQL in var_RosterSubQuery is properly sanitized and validated before execution to maintain security.
-9. If var_RosterSubQuery involves inserting data into a temporary table, make sure the temporary table is created before executing this statement.
-10. Consider using PREPARE and EXECUTE PREPARED statements for frequently executed dynamic SQL to improve performance.
-</notes>
-
-Action Item: 30 of 37
--------------------------
-<sctComment>
-	/*	[7672 - Severity CRITICAL - PostgreSQL doesn't support EXECUTE statements that run a character string. Convert your source code manually.]	exec (@ResultQuery)	*/
-</sctComment>
-
-	To convert the T-SQL EXECUTE statement to PostgreSQL 16 compatible code, we need to use the EXECUTE function with format(). This approach allows for dynamic SQL execution while providing better security against SQL injection. Here's the equivalent PostgreSQL code:
-
-<sql>
-EXECUTE format('%s', var_ResultQuery);
-</sql>
-
-<notes>
-1. In PostgreSQL, we use the EXECUTE function to run dynamic SQL.
-2. The format() function is used to safely handle the dynamic SQL string stored in var_ResultQuery.
-3. var_ResultQuery should contain the full SQL statement to be executed.
-4. This method is safer than direct string concatenation as it helps prevent SQL injection.
-5. Make sure that var_ResultQuery is properly constructed earlier in the code with all necessary parameters and conditions.
-6. If var_ResultQuery contains any parameters that need to be passed dynamically, you should use the USING clause with EXECUTE to pass these parameters safely.
-7. For complex queries with multiple parameters, you might need to adjust the format string and add more arguments to the format() function.
-8. Always ensure that the dynamic SQL in var_ResultQuery is properly sanitized and validated before execution to maintain security.
-9. If var_ResultQuery involves inserting data into a temporary table, make sure the temporary table is created before executing this statement.
-10. Consider using PREPARE and EXECUTE PREPARED statements for frequently executed dynamic SQL to improve performance.
-</notes>
-
-Action Item: 31 of 37
--------------------------
-<sctComment>
-	/*	[7927 - Severity CRITICAL - PostgreSQL doesn't support OUTER joins for self-referenced tables without a primary key. Convert your source code manually.]	update A set NID = UserRoleNetwork.NetworkID, NN = Network.Name					from UserRole					join UserRoleNetwork on UserRole.UserRoleID = UserRoleNetwork.UserRoleID					join Network on Network.NetworkID = UserRoleNetwork.NetworkID					left join @AllTypeValues A on A.RT = @ReportType					where UserRole.UserRoleID = @UserRoleID	*/
-</sctComment>
-
-	To convert this T-SQL code to PostgreSQL 16 compatible code, we need to restructure the query to avoid the OUTER join on a self-referenced table without a primary key. Here's the equivalent PostgreSQL code:
-
-<sql>
-UPDATE alltypevalues$appreportdefaultfilters AS A
-SET 
-    NID = URN.NetworkID,
-    NN = N.Name
-FROM 
-    dbo.UserRole UR
-    JOIN dbo.UserRoleNetwork URN ON UR.UserRoleID = URN.UserRoleID
-    JOIN dbo.Network N ON N.NetworkID = URN.NetworkID
-WHERE 
-    UR.UserRoleID = par_UserRoleID
-    AND A.RT = par_ReportType;
-</sql>
-
-<notes>
-1. We've changed the table name from @AllTypeValues to alltypevalues$appreportdefaultfilters, which is the temporary table created earlier in the procedure.
-2. The LEFT JOIN has been removed, and instead, we're updating only the rows that match the conditions in the WHERE clause.
-3. We've used table aliases to make the query more readable.
-4. The par_UserRoleID and par_ReportType are procedure parameters that should be available in the context where this query is executed.
-5. This query assumes that the alltypevalues$appreportdefaultfilters table has columns NID, NN, and RT.
-6. The query will update the NID and NN columns for all rows in alltypevalues$appreportdefaultfilters where RT matches par_ReportType, based on the joined data from UserRole, UserRoleNetwork, and Network tables.
-7. If there are no matching rows in UserRole, UserRoleNetwork, or Network, no update will occur.
-8. This approach eliminates the need for an OUTER join on a self-referenced table, addressing the PostgreSQL limitation mentioned in the error message.
-</notes>
-
-Action Item: 32 of 37
--------------------------
-<sctComment>
-	/*	[7927 - Severity CRITICAL - PostgreSQL doesn't support OUTER joins for self-referenced tables without a primary key. Convert your source code manually.]	update A set  CID =  UserRoleCampus.CampusID, CN = Campus.Name					from UserRole					join UserRoleCampus on UserRole.UserRoleID = UserRoleCampus.UserRoleID					join Campus on campus.CampusID = UserRoleCampus.CampusID					left join @AllTypeValues A on A.RT = @ReportType					where UserRole.UserRoleID = @UserRoleID	*/
-</sctComment>
-
-	To convert this T-SQL code to PostgreSQL 16 compatible code, we need to restructure the query to avoid the OUTER join on a self-referenced table without a primary key. Here's the equivalent PostgreSQL code:
-
-<sql>
-UPDATE alltypevalues$appreportdefaultfilters AS A
-SET 
-    CID = URC.CampusID,
-    CN = C.Name
-FROM 
-    dbo.UserRole UR
-    JOIN dbo.UserRoleCampus URC ON UR.UserRoleID = URC.UserRoleID
-    JOIN dbo.Campus C ON C.CampusID = URC.CampusID
-WHERE 
-    UR.UserRoleID = par_UserRoleID
-    AND A.RT = par_ReportType;
-</sql>
-
-<notes>
-1. We've changed the table name from @AllTypeValues to alltypevalues$appreportdefaultfilters, which is the temporary table created earlier in the procedure.
-2. The LEFT JOIN has been removed, and instead, we're updating only the rows that match the conditions in the WHERE clause.
-3. We've used table aliases to make the query more readable.
-4. The par_UserRoleID and par_ReportType are procedure parameters that should be available in the context where this query is executed.
-5. This query assumes that the alltypevalues$appreportdefaultfilters table has columns CID, CN, and RT.
-6. The query will update the CID and CN columns for all rows in alltypevalues$appreportdefaultfilters where RT matches par_ReportType, based on the joined data from UserRole, UserRoleCampus, and Campus tables.
-7. If there are no matching rows in UserRole, UserRoleCampus, or Campus, no update will occur.
-8. This approach eliminates the need for an OUTER join on a self-referenced table, addressing the PostgreSQL limitation mentioned in the error message.
-</notes>
-
-Action Item: 33 of 37
--------------------------
-<sctComment>
-	/*	[7927 - Severity CRITICAL - PostgreSQL doesn't support OUTER joins for self-referenced tables without a primary key. Convert your source code manually.]	Update A set TID = UserRoleTeacher.TeacherID, TN = Teacher.LastName + ', ' + Teacher.FirstName , CID = UserRoleCampus.CampusID, CN = Campus.Name					from UserRole					join UserRoleTeacher on UserRole.UserRoleID = UserRoleTeacher.UserRoleID					join UserRoleCampus on UserRole.UserRoleID = UserRoleCampus.UserRoleID					join Teacher on Teacher.TeacherID = UserRoleTeacher.TeacherID					join Campus on campus.CampusID = UserRoleCampus.CampusID					left join @AllTypeValues A on A.RT = @ReportType					where UserRole.UserRoleID = @UserRoleID	*/
-</sctComment>
-
-	To convert this T-SQL code to PostgreSQL 16 compatible code, we need to restructure the query to avoid the OUTER join on a self-referenced table without a primary key. Here's the equivalent PostgreSQL code:
-
-<sql>
-UPDATE alltypevalues$appreportdefaultfilters AS A
-SET 
-    TID = URT.TeacherID,
-    TN = T.LastName || ', ' || T.FirstName,
-    CID = URC.CampusID,
-    CN = C.Name
-FROM 
-    dbo.UserRole UR
-    JOIN dbo.UserRoleTeacher URT ON UR.UserRoleID = URT.UserRoleID
-    JOIN dbo.UserRoleCampus URC ON UR.UserRoleID = URC.UserRoleID
-    JOIN dbo.Teacher T ON T.TeacherID = URT.TeacherID
-    JOIN dbo.Campus C ON C.CampusID = URC.CampusID
-WHERE 
-    UR.UserRoleID = par_UserRoleID
-    AND A.RT = par_ReportType;
-</sql>
-
-<notes>
-1. We've changed the table name from @AllTypeValues to alltypevalues$appreportdefaultfilters, which is the temporary table created earlier in the procedure.
-2. The LEFT JOIN has been removed, and instead, we're updating only the rows that match the conditions in the WHERE clause.
-3. We've used table aliases to make the query more readable.
-4. The string concatenation for the teacher's name is done using the || operator in PostgreSQL instead of the + operator used in T-SQL.
-5. The par_UserRoleID and par_ReportType are procedure parameters that should be available in the context where this query is executed.
-6. This query assumes that the alltypevalues$appreportdefaultfilters table has columns TID, TN, CID, CN, and RT.
-7. The query will update the TID, TN, CID, and CN columns for all rows in alltypevalues$appreportdefaultfilters where RT matches par_ReportType, based on the joined data from UserRole, UserRoleTeacher, UserRoleCampus, Teacher, and Campus tables.
-8. If there are no matching rows in any of the joined tables, no update will occur.
-9. This approach eliminates the need for an OUTER join on a self-referenced table, addressing the PostgreSQL limitation mentioned in the error message.
-</notes>
-
-Action Item: 34 of 37
--------------------------
-<sctComment>
-	/*	[9996 - Severity CRITICAL - Transformer error occurred in statement. Please submit report to developers.]	set @Result = (select '<Data> ' + replace(replace((select '<Type>' , RT, RYID, RYN, RDSID, RDSN, SYID, SYN, COLID, COLN, ALID, ALN, TID, TN, CID, CN,NID,NN, SBID, SBN, AID, AN , URCID, '</Type>'					from @AllTypeValues FOR XML PATH ('')),'&lt;','<'),'&gt;','>') + '</Data>' )	*/
-</sctComment>
-
-	To convert this T-SQL code to PostgreSQL 16 compatible code, we need to use PostgreSQL's XML functions and string manipulation functions. Here's the equivalent PostgreSQL code:
-
-<sql>
-SELECT var_Result := (
-    SELECT 
-        '<Data>' || 
-        REPLACE(
-            REPLACE(
-                (SELECT string_agg(
-                    '<Type>' || 
-                    COALESCE(RT, '') || COALESCE(RYID::text, '') || COALESCE(RYN, '') || 
-                    COALESCE(RDSID::text, '') || COALESCE(RDSN, '') || COALESCE(SYID::text, '') || 
-                    COALESCE(SYN, '') || COALESCE(COLID, '') || COALESCE(COLN, '') || 
-                    COALESCE(ALID::text, '') || COALESCE(ALN, '') || COALESCE(TID::text, '') || 
-                    COALESCE(TN, '') || COALESCE(CID::text, '') || COALESCE(CN, '') || 
-                    COALESCE(NID::text, '') || COALESCE(NN, '') || COALESCE(SBID::text, '') || 
-                    COALESCE(SBN, '') || COALESCE(AID::text, '') || COALESCE(AN, '') || 
-                    COALESCE(URCID::text, '') || '</Type>', 
-                    ''
-                ) FROM alltypevalues$appreportdefaultfilters
-                ),
-                '&lt;', '<'
-            ),
-            '&gt;', '>'
-        ) || 
-        '</Data>'
-);
-</sql>
-
-<notes>
-1. We use the `string_agg` function to concatenate all the fields from the `alltypevalues$appreportdefaultfilters` table into a single string.
-2. Each field is wrapped in a `<Type>` tag, and we use `COALESCE` to handle NULL values.
-3. We use `::text` to convert non-text fields to text.
-4. The `REPLACE` function is used twice to replace `&lt;` with `<` and `&gt;` with `>`.
-5. The result is wrapped in `<Data>` tags.
-6. The result is assigned to the `var_Result` variable using the `:=` operator.
-
-This PostgreSQL code achieves the same result as the original T-SQL code, creating an XML-like string from the data in the `alltypevalues$appreportdefaultfilters` table.
-</notes>
-
-Action Item: 35 of 37
--------------------------
-<sctComment>
-	/*	[9996 - Severity CRITICAL - Transformer error occurred in statement. Please submit report to developers.]	update UserSetting set Value = '<Data> ' + replace(replace((select '<Type>' , RT, RYID, RYN, RDSID, RDSN, SYID, SYN, COLID, COLN, ALID, ALN, TID, TN, CID, CN,NID,NN, SBID, SBN, AID, AN , URCID, '</Type>'						-- 19-Oct-2020: Manohar - Modified to improve the performance -- added SettingID = 42 in where condition						from @AllTypeValues FOR XML PATH ('')),'&lt;','<'),'&gt;','>') + '</Data>' where UserAccountID = @UserAccountID and UserRoleID = @UserRoleID and SettingID = 42	*/
-</sctComment>
-
-	To convert this T-SQL code to PostgreSQL 16 compatible code, we need to use PostgreSQL's string aggregation and XML functions. Here's the equivalent PostgreSQL code:
-
-<sql>
-UPDATE dbo.usersetting
-SET value = (
-    SELECT 
-        '<Data>' || 
-        REPLACE(
-            REPLACE(
-                (SELECT string_agg(
-                    '<Type>' || 
-                    COALESCE(RT, '') || COALESCE(RYID::text, '') || COALESCE(RYN, '') || 
-                    COALESCE(RDSID::text, '') || COALESCE(RDSN, '') || COALESCE(SYID::text, '') || 
-                    COALESCE(SYN, '') || COALESCE(COLID, '') || COALESCE(COLN, '') || 
-                    COALESCE(ALID::text, '') || COALESCE(ALN, '') || COALESCE(TID::text, '') || 
-                    COALESCE(TN, '') || COALESCE(CID::text, '') || COALESCE(CN, '') || 
-                    COALESCE(NID::text, '') || COALESCE(NN, '') || COALESCE(SBID::text, '') || 
-                    COALESCE(SBN, '') || COALESCE(AID::text, '') || COALESCE(AN, '') || 
-                    COALESCE(URCID::text, '') || '</Type>', 
-                    ''
-                ) FROM alltypevalues$appreportdefaultfilters
-                ),
-                '&lt;', '<'
-            ),
-            '&gt;', '>'
-        ) || 
-        '</Data>'
-)
-WHERE useraccountid = var_UserAccountID 
-  AND userroleid = par_UserRoleID 
-  AND settingid = 42;
-</sql>
-
-<notes>
-1. We use `string_agg` function to concatenate all the fields from the `alltypevalues$appreportdefaultfilters` table into a single string.
-2. Each field is wrapped in a `<Type>` tag, and we use `COALESCE` to handle NULL values.
-3. We use `::text` to convert non-text fields to text.
-4. The `REPLACE` function is used twice to replace `&lt;` with `<` and `&gt;` with `>`.
-5. The result is wrapped in `<Data>` tags.
-6. We use the UPDATE statement to modify the `value` column in the `usersetting` table.
-7. The WHERE clause ensures we're updating the correct row based on `useraccountid`, `userroleid`, and `settingid`.
-
-This PostgreSQL code achieves the same result as the original T-SQL code, creating an XML-like string from the data in the `alltypevalues$appreportdefaultfilters` table and updating it in the `usersetting` table.
-</notes>
-
-Action Item: 36 of 37
--------------------------
-<sctComment>
-	/*	[7672 - Severity CRITICAL - PostgreSQL doesn't support EXECUTE statements that run a character string. Convert your source code manually.]	exec(@ResultQuery3)	*/
-</sctComment>
-
-	To convert this T-SQL EXECUTE statement to PostgreSQL 16 compatible code, we need to use the EXECUTE command with format() function. Here's the equivalent PostgreSQL code:
-
-<sql>
-EXECUTE format('%s', var_ResultQuery3);
-</sql>
-
-<notes>
-1. In PostgreSQL, we use the EXECUTE command to run dynamic SQL.
-2. The format() function is used to safely handle the dynamic SQL string.
-3. var_ResultQuery3 contains the SQL query string that needs to be executed.
-4. This approach prevents SQL injection by properly handling the dynamic SQL.
-5. Make sure that var_ResultQuery3 is properly constructed earlier in the code with all necessary parameters and conditions.
-6. If var_ResultQuery3 contains any parameters that need to be passed dynamically, you would use additional arguments in the format() function, like this:
-   EXECUTE format('%s', var_ResultQuery3, param1, param2, ...);
-
-This PostgreSQL code achieves the same result as the original T-SQL exec() statement, executing the dynamic SQL stored in var_ResultQuery3.
-</notes>
-
-Action Item: 37 of 37
--------------------------
-<sctComment>
-	/*	[7672 - Severity CRITICAL - PostgreSQL doesn't support EXECUTE statements that run a character string. Convert your source code manually.]	exec(@ResultQuery3)	*/
-</sctComment>
-
-	To convert this T-SQL EXECUTE statement to PostgreSQL 16 compatible code, we need to use the EXECUTE command with format() function. Here's the equivalent PostgreSQL code:
-
-<sql>
-EXECUTE format('%s', var_ResultQuery3);
-</sql>
-
-<notes>
-1. In PostgreSQL, we use the EXECUTE command to run dynamic SQL.
-2. The format() function is used to safely handle the dynamic SQL string.
-3. var_ResultQuery3 contains the SQL query string that needs to be executed.
-4. This approach prevents SQL injection by properly handling the dynamic SQL.
-5. Make sure that var_ResultQuery3 is properly constructed earlier in the code with all necessary parameters and conditions.
-6. If var_ResultQuery3 contains any parameters that need to be passed dynamically, you would use additional arguments in the format() function, like this:
-   EXECUTE format('%s', var_ResultQuery3, param1, param2, ...);
-
-This PostgreSQL code achieves the same result as the original T-SQL exec() statement, executing the dynamic SQL stored in var_ResultQuery3.
-</notes>
-
-

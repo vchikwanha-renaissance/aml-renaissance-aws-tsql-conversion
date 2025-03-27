@@ -1,0 +1,8 @@
+prompt_1 = f"""
+            The following comment block is a snippet of code that is in the {file_name} stored procedure. Give me PostgreSQL 16 equivalent code for the T-SQL code in the following code snippet:
+            {action_item}
+
+            Return the corrected PostgreSQL 16 version of the code snippet enclosed in <sql></sql> tags
+
+            Thoroughly analyze the stored procedure, think it through, step by step. 
+            """

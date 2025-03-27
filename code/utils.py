@@ -54,7 +54,7 @@ def write_s3_file(s3_client, bucket_name, file_key, file_name, content):
 
             s3_client.put_object(Bucket=bucket_name, Key=file_key, Body=content)
 
-            logger.info(f"Successfully wrote file to S3: {bucket_name}/{file_key}")
+            logger.info(f"Successfully uploaded file to S3: {bucket_name}/{file_key}")
 
     except FileNotFoundError as e:
         s3_client.put_object(Bucket=bucket_name, Key=file_key, Body=content)
@@ -62,7 +62,7 @@ def write_s3_file(s3_client, bucket_name, file_key, file_name, content):
         logger.info(f"SCT comments not found: {e}")
 
     except ClientError as e:
-        logger.error(f"Error writing {bucket_name}/{file_key} to S3: {e}")
+        logger.error(f"Error uploading {bucket_name}/{file_key} to S3: {e}")
         raise
 
 
@@ -82,7 +82,7 @@ def extract_dms_comments(sct_code):
         # Iterate through matches and extract comment blocks
         for match in matches:
             block = match.group(0).strip()
-            comment_blocks[f"action_item_{i}"] = block
+            comment_blocks[f"action_item_{i}"] = block.strip()
             i += 1
 
         logger.info(f"Successfully extracted DMS SC comment blocks")
@@ -250,50 +250,6 @@ def write_updated_code(new_code, file_name, agent_name):
     except Exception as e:
         logger.error(f"Error writing updates to updated_{file_name}: {e}")
 
-
-# Function to write updated code to file. Difference with other function is \r\n split
-def write_updated_code2(new_code, file_name, agent_name):
-    try:
-        with open(f"{file_name}", "w") as f:     
-            gen_ai_block = False
-            number_of_spaces = 1
-
-            new_code = new_code.replace("\n", "\r\n")
-
-            for line in new_code.split('\r\n'):
-                # Check if line contains GEN AI comment and get indentation spaces
-                gen_ai_comment = line.find(f"/* GENERATIVE AI CODE BELOW: {agent_name} */")
-
-                # Check if line contains semicolon to identify end of block
-                end_of_block = line.find(";")
-                
-                if  gen_ai_comment != -1:
-                    # Set start of code block to true
-                    gen_ai_block = True
-                    # Set the number of spaces to indent
-                    number_of_spaces = gen_ai_comment
-
-                    f.writelines("\n")    
-                    f.writelines(line)
-                    f.writelines("\n")
-                elif gen_ai_block == True and gen_ai_comment == -1:
-                    # Set the number of spaces to indent
-                    spaces = " " * number_of_spaces
-                    # Add spaces to line
-                    line = f"""{spaces}{line}"""
-
-                    f.writelines(line)
-                    f.writelines("\n")
-
-                    # Check if it is the end of the code block
-                    if end_of_block != -1:
-                        gen_ai_block = False
-                else:
-                    f.writelines(line)
-                    f.writelines("\n")
-                    
-    except Exception as e:
-        logger.error(f"Error writing updates to updated_{file_name}: {e}")
 
            
 
