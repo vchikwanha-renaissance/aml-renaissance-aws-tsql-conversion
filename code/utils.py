@@ -9,20 +9,20 @@ logger = logging.getLogger(__name__)
 
 
 # Function to list objects in s3 bucket
-def list_s3_objects(s3_client, bucket_name):
+def list_s3_objects(s3_client, bucket_name, prefix):
 
     try:
-        response = s3_client.list_objects_v2(Bucket=bucket_name)
+        response = s3_client.list_objects_v2(Bucket=bucket_name, Prefix=prefix)
 
         # Extract object keys from the response
         object_keys = [obj['Key'] for obj in response.get('Contents', [])]
 
-        logger.info(f"Successfully listed objects in {bucket_name}")
+        logger.info(f"Successfully listed objects in {bucket_name}/{prefix}")
 
         return object_keys
     
     except ClientError as e:
-        logger.error(f"Error listing objects in {bucket_name}: {e}")
+        logger.error(f"Error listing objects in {bucket_name}/{prefix}: {e}")
         raise
     
 
@@ -46,7 +46,7 @@ def read_s3_file(s3_client, bucket_name, file_key):
 
 
 # Function to write updated code to s3
-def write_s3_file(s3_client, bucket_name, file_key, file_name):
+def write_s3_file(s3_client, bucket_name, file_key, file_name, content):
 
     try:
         with open(file_name, "r") as f:
@@ -55,6 +55,11 @@ def write_s3_file(s3_client, bucket_name, file_key, file_name):
             s3_client.put_object(Bucket=bucket_name, Key=file_key, Body=content)
 
             logger.info(f"Successfully wrote file to S3: {bucket_name}/{file_key}")
+
+    except FileNotFoundError as e:
+        s3_client.put_object(Bucket=bucket_name, Key=file_key, Body=content)
+
+        logger.info(f"SCT comments not found: {e}")
 
     except ClientError as e:
         logger.error(f"Error writing {bucket_name}/{file_key} to S3: {e}")
@@ -123,7 +128,7 @@ def extract_dynamic_expressions(sct_code):
 
 
 # Function to prompt LLM model to analyze T-SQL code and recommend PostgreSQL equivalent code
-def prompt_llm(bedrock_agent_runtime, agent_id, agent_alias_id, session_id, prompt):
+def prompt_llm(bedrock_agent_runtime, agent_name, agent_id, agent_alias_id, session_id, prompt):
 
     attempts = 0
     
@@ -143,13 +148,13 @@ def prompt_llm(bedrock_agent_runtime, agent_id, agent_alias_id, session_id, prom
             for event in response.get("completion"):
                 completion += event["chunk"]["bytes"].decode("utf8")
 
-            logger.info("Successfully invoked Bedrock Agent Runtime")
+            logger.info(f"Successfully invoked Bedrock agent: {agent_name}")
 
             return completion
 
         except ClientError as e:
             attempts += 1
-            logger.error(f"Error invoking Bedrock Agent Runtime: {e}")
+            logger.error(f"Error invoking Bedrock agent {agent_name}: {e}")
             logger.info(f"Error submitting the following prompt: {prompt}")
             logger.info(f"Retrying... (Attempt {attempts})")
             time.sleep(5)
