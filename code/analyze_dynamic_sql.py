@@ -41,7 +41,7 @@ for assignment in var_assignments:
     action_item = var_assignments[assignment]
 
     # Generate prompt values
-    prompt = f"""
+    prompt_1 = f"""
 The following code snippet is from the {file_name} stored procedure. Give me PostgreSQL 16 equivalent code for the following code snippet:
 {action_item}
 
@@ -52,7 +52,7 @@ Thoroughly analyze the stored procedure, think it through, step by step.
 
 
     # Get Agent Response
-    llm_response = utils.prompt_llm(bedrock_agent_runtime, agent_id, agent_alias_id, session_id, prompt)
+    llm_response = utils.prompt_llm(bedrock_agent_runtime, agent_id, agent_alias_id, session_id, prompt_1)
 
     # Extract XML tags from LLM response
     llm_response = utils.extract_xml_tags(llm_response, action_item)

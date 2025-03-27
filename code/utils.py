@@ -200,7 +200,7 @@ def replace_sct_code(sct_code, llm_response, agent_name):
             logger.error(f"Error replacing SCT code with Gen AI code {llm_response}: {e}")
             raise
     else:
-        logger.info(f"LLM response does not contain SQL item: {llm_response}")
+        logger.info(f"Agent response does not contain SQL for: {llm_response}")
         return sct_code
 
 

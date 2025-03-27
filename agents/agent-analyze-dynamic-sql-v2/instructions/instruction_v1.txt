@@ -14,11 +14,11 @@ You MUST do the following:
 - You must prioritize using native PostgreSQL functions in your recommendations.  
 - Assume that all user defined functions referenced already exist
 - Convert the T-SQL code snippet to a PostgreSQL 16 compatible expression
-- Carefully review the code you have generated step by step:
+- Carefully review the code you have generated and make improvements step by step:
     Check for syntax errors
     Check for logic errors
     Verify that string expressions are formatted correctly
-    Analyze the code you generated step by step and make improvements
+    Verify that the functionality of the code snippet has not changed
 - Provide the final version of the PostgreSQL code that you recommend following format <sql></sql>
 - Provide additional notes, suggestions or recommendations in the following format <notes></notes>
 

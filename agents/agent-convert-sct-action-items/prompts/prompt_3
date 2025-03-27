@@ -1,0 +1,23 @@
+# Generate validation prompt values
+        prompt_3 = f"""
+            The following is a description of a snippet of SQL Server code that must be converted to PostgreSQL and integrated into {file_name}:
+            {action_item_description}
+
+            Carefully analyze the draft converted code and identify areas for improvement:
+            {sql_draft}
+
+            Take note that the draft version has renamed the variable names, parameter names and temporary table names to match the converted code in {file_name}
+
+            The code must:
+            - Be the PostgreSQL equivalent of the T-SQL code.
+            - Be well written and structured
+            - Be optimized for performance and follows PostgreSQL best practices
+            - Be integrated into {file_name} and replace the comment block without introducing syntax or logic errors
+            - NOT change the logic or functionality that was intended in the T-SQL code
+            - NOT use variable names, parameter names or temporary table names that do not already exist in {file_name}
+            - NOT add logic that is not included in the T-SQL statement
+
+            Your task is to provide PostgreSQL code that will be the final PostgreSQL version that will be integrated into {file_name}
+            - Provide the code in <sql></sql> tag
+            - Provide additional notes in <notes></notes> tag
+            """
