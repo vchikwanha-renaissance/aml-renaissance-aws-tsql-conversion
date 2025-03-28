@@ -10,22 +10,30 @@ def main():
     logger = logging.getLogger(__name__)
 
     parser = ArgumentParser(description="Migrate MSSQL to PostgreSQL")
+    parser.add_argument("--profile", "-p", help="AWS profile name", default="default")
+    parser.add_argument("--bucket", "-b", help="Bucket name", default="aml-renaissance-aws-tsql-conversion")
+    parser.add_argument("--source", "-s", help="Source prefix", default="aws-sct/databases/stars_prod_ci_migration/stored-procedures/")
+    parser.add_argument("--destination", "-d", help="Destination prefix", default="aws-sct/databases/stars_prod_ci_migration/stored-procedures/")
     parser.add_argument("--file", "-f", help="File to migrate", default=".sql")
     args = parser.parse_args()
+    
+    profile = args.profile
     sql_file = args.file
+    bucket_name = args.bucket
+    sct_files_prefix = args.source
 
+    session = boto3.Session(profile_name=profile)
 
     # Get bedrock agent runtime and create a session
-    bedrock_agent_runtime = boto3.client('bedrock-agent-runtime')
+    bedrock_agent_runtime = session.client('bedrock-agent-runtime')
     response = bedrock_agent_runtime.create_session()
     session_id = response['sessionId']
 
 
     # Get s3 client and get files from bucket
-    s3_client = boto3.client('s3')
+    s3_client = session.client('s3')
 
-    bucket_name = "aml-renaissance-aws-tsql-conversion"
-    sct_files_prefix = "aws-sct/databases/stars_prod_ci_migration/stored-procedures/"
+    
     sct_file_keys = utils.list_s3_objects(s3_client, bucket_name, sct_files_prefix)
 
 

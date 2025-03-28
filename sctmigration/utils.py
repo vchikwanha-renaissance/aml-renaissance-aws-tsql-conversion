@@ -2,6 +2,7 @@ import re
 import time
 import logging
 
+from pathlib import Path
 from botocore.exceptions import ClientError
 
 logging.basicConfig(level=logging.INFO)
@@ -59,6 +60,7 @@ def write_s3_file(s3_client, bucket_name, file_key, file_name, content):
     except FileNotFoundError as e:
         s3_client.put_object(Bucket=bucket_name, Key=file_key, Body=content)
 
+        # If the SQL file doesn't have SCT comments, there would not be a file to read in the local directory
         logger.info(f"SCT comments not found: {e}")
 
     except ClientError as e:
@@ -132,6 +134,7 @@ def prompt_llm(bedrock_agent_runtime, agent_name, agent_id, agent_alias_id, sess
 
     attempts = 0
     
+    # Because LLM may time out, attempt to invoke the agent up to 3 times
     while attempts < 3:
         try:
             response = bedrock_agent_runtime.invoke_agent(
@@ -211,8 +214,15 @@ def replace_sct_code(sct_code, llm_response, agent_name):
 
 # Function to write updated code to file
 def write_updated_code(new_code, file_name, agent_name):
+    
+    # Create directory for migrated code
+    file_dir = Path().cwd().joinpath('migrated-files')
+    Path.mkdir(file_dir, exist_ok=True)
+
+    full_file_name = file_dir.joinpath(file_name)
+    
     try:
-        with open(f"{file_name}", "w") as f:     
+        with open(f"{full_file_name}", "w") as f:     
             gen_ai_block = False
             number_of_spaces = 1
 
