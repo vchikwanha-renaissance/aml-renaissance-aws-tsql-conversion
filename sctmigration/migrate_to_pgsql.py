@@ -12,15 +12,17 @@ def main():
     parser = ArgumentParser(description="Migrate MSSQL to PostgreSQL")
     parser.add_argument("--profile", "-p", help="AWS profile name", default="default")
     parser.add_argument("--bucket", "-b", help="Bucket name", default="aml-renaissance-aws-tsql-conversion")
-    parser.add_argument("--source", "-s", help="Source prefix", default="aws-sct/databases/stars_prod_ci_migration/stored-procedures/")
-    parser.add_argument("--destination", "-d", help="Destination prefix", default="aws-sct/databases/stars_prod_ci_migration/stored-procedures/")
+    parser.add_argument("--source", "-s", help="Source files prefix", default="aws-sct/databases/stars_prod_ci_migration/stored-procedures/")
+    parser.add_argument("--destination", "-d", help="Destination files prefix", default="gen-ai/databases/stars_prod_ci_migration/stored-procedures/")
     parser.add_argument("--file", "-f", help="File to migrate", default=".sql")
+    
     args = parser.parse_args()
     
     profile = args.profile
-    sql_file = args.file
     bucket_name = args.bucket
-    sct_files_prefix = args.source
+    source_files_prefix = args.source
+    destination_files_prefix = args.destination
+    sql_file = args.file
 
     session = boto3.Session(profile_name=profile)
 
@@ -34,10 +36,10 @@ def main():
     s3_client = session.client('s3')
 
     
-    sct_file_keys = utils.list_s3_objects(s3_client, bucket_name, sct_files_prefix)
+    source_file_keys = utils.list_s3_objects(s3_client, bucket_name, source_files_prefix)
 
 
-    for file_key in sct_file_keys:
+    for file_key in source_file_keys:
 
         if file_key.endswith(f"{sql_file}"):
             
@@ -58,21 +60,25 @@ def main():
             process_sct_comments_agent_id = "QEKGKPJV5J"
             process_sct_comments_agent_alias_id = "NUTF4DRGCK"
 
-            # Define s3 prefix for processed files
-            processed_sct_file_key = file_key.replace("aws-sct", process_sct_comments_agent_name)
 
             # Process SCT comment blocks
             for comment in comment_blocks:
                 action_item = comment_blocks[comment]
 
-                # Generate prompt to get PostgreSQL code
+                # Generate prompt for SCT comment block conversion
                 prompt_1 = f"""
-                    The following comment block is a snippet of code that is in the {file_name} stored procedure. Give me PostgreSQL 16 equivalent code for the T-SQL code in the following code snippet:
+                    for context, the following comment block is a snippet of code that is in the {file_name} stored procedure:
                     {action_item}
 
-                    Return the corrected PostgreSQL 16 version of the code snippet enclosed in <sql></sql> tags
-
-                    Thoroughly analyze the stored procedure, think it through, step by step. 
+                    Step by step:
+                    1. Use an internal monologue to describe what T-SQL expression is doing
+                    2. Think carefully and formulate PostgreSQL code that is the equivalent of the T-SQL
+                    3. Review the PostgreSQL code you have formulated and validate that it is doing what the T-SQL code is doing
+                    4. Adapt the PostgreSQL code you have developed to use the variable names, parameter names and temporary table names that are in use in the following code, {file_name}
+                    5. Evaluate the code you have generated and look for improvements
+                    6. Present the final version of the PostgreSQL code that will replace the T-SQL code 
+                    
+                    Return the PostgreSQL version of the code snippet enclosed in <sql></sql> tags
                     """
 
                 # Get Agent Response
@@ -82,7 +88,7 @@ def main():
                                                 process_sct_comments_agent_alias_id, 
                                                 session_id, 
                                                 prompt_1)
-                
+                         
                 
                 # Extract XML tags from LLM response
                 llm_response = utils.extract_xml_tags(llm_response, action_item)
@@ -107,9 +113,9 @@ def main():
                 
 
             # Upload processed SCT code to s3
-            utils.write_s3_file(s3_client, 
+            utils.upload_s3_file(s3_client, 
                                 bucket_name, 
-                                processed_sct_file_key, 
+                                destination_files_prefix, 
                                 file_name,
                                 new_sct_code)
 
@@ -123,8 +129,6 @@ def main():
             process_dynamic_sql_agent_id = "R8ZNIYI1EF"
             process_dynamic_sql_agent_alias_id = "CJHDM6H7DA"
 
-            # Define s3 prefix for processed files
-            processed_dynamic_sql_file_key = file_key.replace("aws-sct", process_dynamic_sql_agent_name)
 
             for assignment in var_assignments:
                 action_item = var_assignments[assignment]
@@ -163,9 +167,9 @@ def main():
 
 
             # Upload processed dynamic SQL code to s3
-            utils.write_s3_file(s3_client, 
+            utils.upload_s3_file(s3_client, 
                                 bucket_name, 
-                                processed_dynamic_sql_file_key, 
+                                destination_files_prefix, 
                                 file_name,
                                 new_sct_code)
 

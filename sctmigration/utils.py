@@ -46,11 +46,17 @@ def read_s3_file(s3_client, bucket_name, file_key):
         raise
 
 
-# Function to write updated code to s3
-def write_s3_file(s3_client, bucket_name, file_key, file_name, content):
+# Function to upload updated code to s3
+def upload_s3_file(s3_client, bucket_name, file_key, file_name, content):
+
+    # Define processed file location
+    file_dir = Path().cwd().joinpath('processed-files')
+    full_file_name = file_dir.joinpath(file_name)
+
+    file_key = file_key + file_name
 
     try:
-        with open(file_name, "r") as f:
+        with open(full_file_name, "r") as f:
             content = f.read().encode('utf-8')
 
             s3_client.put_object(Bucket=bucket_name, Key=file_key, Body=content)
@@ -216,7 +222,7 @@ def replace_sct_code(sct_code, llm_response, agent_name):
 def write_updated_code(new_code, file_name, agent_name):
     
     # Create directory for migrated code
-    file_dir = Path().cwd().joinpath('migrated-files')
+    file_dir = Path().cwd().joinpath('processed-files')
     Path.mkdir(file_dir, exist_ok=True)
 
     full_file_name = file_dir.joinpath(file_name)
