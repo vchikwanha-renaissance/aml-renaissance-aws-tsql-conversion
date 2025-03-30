@@ -1,0 +1,48 @@
+# Using LLM to Migrate MSSQL code to PostgreSQL
+
+## Installation
+To run the code conversion tool, you will need to install and configure the following on your machine
+1. Python 3.x (3.11 and above)
+2. AWS SDK for Python (Boto3) 
+    -- install using pip: pip install boto3
+3. AWS CLI 
+    -- https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
+4. Configure AWS credentials
+    -- run "aws configure" in the terminal or command prompt on your local machine. Enter the following credentials when prompted
+    I.   AWS Access Key ID
+    II.  AWS Secret Access Key
+    III. Default region (eg. us-west-2) 
+5. Configure an AWS session token in the credentials file.
+    -- Credentials file is located at {HOME}/.aws/credentials or ~/.aws/credentials
+    -- Open the credentials file and add: aws_session_token = {enter your session token}
+
+
+## Usage
+To use the script:
+1. Clone the repository
+2. In the directory that contains the python scripts, run the following command:
+    -- python migrate_to_pgsql.py -h
+
+    This command will show you the command line option available. 
+    --profile       allows you to enter the AWS profile you want to use to access AWS. 
+                    by default, the [default] profile configured when you ran "aws configure" is used if no value is entered.
+    --bucket        allows you to specify the s3 bucket that will contain both the SCT converted files as well as the LLM processed files
+                    by default, the following bucket is used if no value is entered: "aml-renaissance-aws-tsql-conversion"
+    --source        allows you to enter the s3 prefix for the source files
+                    by default, the following prefix is used if no value is entered: "aws-sct/databases/stars_prod_ci_migration/stored-procedures/"
+    --destination   allows you to enter the s3 prefix for the processed files
+                    by default, the following destination prefix is used if no value is entered: "gen-ai/databases/stars_prod_ci_migration/stored-procedures/"
+    --file          allows you to enter a specific file that you want to convert. 
+                    by default, all files in the source prefix are processed if no value is entered. 
+
+3. An example of how to run the script is:
+
+    -- python migrate_to_pgsql.py -f appsharegetnotificationlist.sql
+
+    The command above will 
+    1. download the appsharegetnotificationlist.sql file from the default or specified {bucket}/{source prefix} 
+    2. scan the file for SCT comment blocks, iterate through each comment block and prompt the LLM for a PostgreSQL version of the T-SQL code
+    3. scan the file for variable assignments that have SQL expressions in strings and prompt the LLM for PostgreSQL version of the SQL expressions within the strings
+    4. create a processed-files directory to save the files while they are being updated
+    5. upload the processed appsharegetnotificationlist.sql file to the default or specified {bucket}/{destination prefix}
+

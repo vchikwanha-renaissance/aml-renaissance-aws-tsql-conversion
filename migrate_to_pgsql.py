@@ -120,7 +120,7 @@ def main():
                                 new_sct_code)
 
 
-            # Parse SCT code and get all DMS SC comment blocks that contain code that SCT was not able to convert
+            # Parse SCT code and get all variable assignments and search for dynamic sql
             var_assignments = utils.extract_dynamic_expressions(new_sct_code)
 
 
@@ -159,7 +159,7 @@ def main():
                 new_sct_code = utils.replace_sct_code(new_sct_code,
                                                     llm_response, 
                                                     process_dynamic_sql_agent_name)
-
+                
                 # Write new code to file
                 utils.write_updated_code(new_sct_code, 
                                         file_name, 

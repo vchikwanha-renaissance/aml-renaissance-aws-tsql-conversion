@@ -234,7 +234,7 @@ def write_updated_code(new_code, file_name, agent_name):
 
             for line in new_code.split('\n'):
                 # Check if line contains GEN AI comment and get indentation spaces
-                gen_ai_comment = line.find(f"/* GENERATIVE AI CODE BELOW: {agent_name} */")
+                gen_ai_comment = line.find(f"/* GENERATIVE AI CODE BELOW:")
 
                 # Check if line contains semicolon to identify end of block
                 end_of_block = line.find(";")
