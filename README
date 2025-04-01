@@ -21,7 +21,7 @@ To run the code conversion tool, you will need to install and configure the foll
 To use the script:
 1. Clone the repository
 2. In the directory that contains the python scripts, run the following command:
-    -- python migrate_to_pgsql.py -h
+    python migrate_to_pgsql.py -h
 
     This command will show you the command line option available. 
     --profile       allows you to enter the AWS profile you want to use to access AWS. 
@@ -37,7 +37,7 @@ To use the script:
 
 3. An example of how to run the script is:
 
-    -- python migrate_to_pgsql.py -f appsharegetnotificationlist.sql
+    python migrate_to_pgsql.py -f appsharegetnotificationlist.sql
 
     The command above will 
     1. download the appsharegetnotificationlist.sql file from the default or specified {bucket}/{source prefix} 
