@@ -46,6 +46,79 @@ def read_s3_file(s3_client, bucket_name, file_key):
         raise
 
 
+# Function to get the structural definition of stored procedure or function
+def get_structural_definition(sql_content):
+    
+    # Define search pattern for input parameter block
+    input_param_pattern = r'''
+                        create\s+ 
+                        (?:procedure|function)
+                        \s+[\w[\].]+
+                        (.*?)
+                        (?:WITH|AS|RETURNS|BEGIN)
+                    '''
+    
+    # Define search pattern for individual input parameters
+    param_pattern = r'''
+                        @(\w+)
+                        \s+
+                        ([\w\[\]\(\)\s,]+?)
+                        \s*[,\s]
+                    '''
+    
+    create_blocks = re.findall(input_param_pattern, sql_content, re.DOTALL | re.IGNORECASE | re.VERBOSE)
+
+    input_params = []
+    for block in create_blocks:
+        params = re.finditer(param_pattern, block, re.IGNORECASE | re.VERBOSE)
+        for param in params:
+            if not re.search(r's\+(OUTPUT|OUT)\s*[,\)]', param.group(0), re.IGNORECASE):
+                input_params.append((param.group(1), param.group(2).strip()))
+    
+    # Define search pattern for variables and temp tables
+    variable_pattern = r'declare\s+@(\w+)\s+([\w(\)]+)'
+    temp_table_pattern = r'create\s+table\s+#([\w]+)'
+
+    # Find all variables in the SQL file
+    variables = re.findall(variable_pattern, sql_content)
+
+    # Find all temp tables in the SQL file
+    temp_tables = re.findall(temp_table_pattern, sql_content)
+
+    schema = {
+        'Parameters': input_params,
+        'Variables': variables,
+        'Temp Tables': temp_tables
+    }
+
+    return schema
+
+
+# Function to replace MSSQL parameters, variables and temp tables
+def replace_variables(sql_content, schema):
+
+    # Replace input parameters
+    for param in schema['Parameters']:
+        # replace SQL Server parameters that were not converted by SCT
+        sql_content = sql_content.replace('@' + param[0], 'par_' + param[0].lower())
+    
+    # Replace SQL Server variables
+    for var in schema['Variables']:
+        var_name = 'var_' + var[0]
+        
+        # replace SQL Server variables that were not converted by SCT
+        sql_content = sql_content.replace('@' + var[0], var_name)
+
+        if var[1].lower() == 'bit':
+            sql_content = sql_content.replace(var_name + ' NUMERIC(1, 0)', var_name + ' BOOLEAN')
+
+    # Replace SQL Server temp table names
+    for temp_table in schema['Temp Tables']:
+        sql_content = sql_content.replace('#' + temp_table, 't$' + temp_table.lower())
+
+    return sql_content
+
+
 # Function to upload updated code to s3
 def upload_s3_file(s3_client, bucket_name, file_key, file_name, content):
 
@@ -72,7 +145,7 @@ def upload_s3_file(s3_client, bucket_name, file_key, file_name, content):
     except ClientError as e:
         logger.error(f"Error uploading {bucket_name}/{file_key} to S3: {e}")
         raise
-
+  
 
 # Function to parse SCT code and get all DMS SC comment blocks that contain code that SCT was not able to convert
 def extract_dms_comments(sct_code):

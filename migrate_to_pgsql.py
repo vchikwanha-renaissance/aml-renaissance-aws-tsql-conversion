@@ -49,6 +49,18 @@ def main():
             # Get SCT code from s3
             sct_code = utils.read_s3_file(s3_client, bucket_name, file_key)
 
+            # Set MSSQL code file key
+            mssql_file_key = file_key.replace("aws-sct", "ms-sql-server")
+            
+            # Get MSSQL code from s3
+            mssql_code = utils.read_s3_file(s3_client, bucket_name, mssql_file_key)
+
+            # Get structual definition from source SQL Server code i.e, input params, variables and temp tables
+            structual_definition = utils.get_structural_definition(mssql_code)
+
+            # Update SCT variables and BIT data type
+            sct_code = utils.replace_variables(sct_code, structual_definition)
+
             # Initialize new code variable
             new_sct_code = sct_code
 
@@ -72,11 +84,10 @@ def main():
 
                     Step by step:
                     1. Use an internal monologue to describe what T-SQL expression is doing
-                    2. Think carefully and formulate PostgreSQL code that is the equivalent of the T-SQL
+                    2. Think, step by step, and formulate PostgreSQL code that is the equivalent of the T-SQL
                     3. Review the PostgreSQL code you have formulated and validate that it is doing what the T-SQL code is doing
-                    4. Adapt the PostgreSQL code you have developed to use the variable names, parameter names and temporary table names that are in use in the following code, {file_name}
-                    5. Evaluate the code you have generated and look for improvements
-                    6. Present the final version of the PostgreSQL code that will replace the T-SQL code 
+                    4. Carefully evaluate the code you have generated and look for improvements
+                    5. Present the PostgreSQL code that you recommend to replace the T-SQL code 
                     
                     Return the PostgreSQL version of the code snippet enclosed in <sql></sql> tags
                     """
