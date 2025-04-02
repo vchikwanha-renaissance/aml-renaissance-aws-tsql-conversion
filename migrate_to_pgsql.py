@@ -56,10 +56,10 @@ def main():
             mssql_code = utils.read_s3_file(s3_client, bucket_name, mssql_file_key)
 
             # Get structual definition from source SQL Server code i.e, input params, variables and temp tables
-            structual_definition = utils.get_structural_definition(mssql_code)
+            structural_definition = utils.get_structural_definition(mssql_code)
 
             # Update SCT variables and BIT data type
-            sct_code = utils.replace_variables(sct_code, structual_definition)
+            sct_code = utils.replace_variables(sct_code, structural_definition)
 
             # Initialize new code variable
             new_sct_code = sct_code
