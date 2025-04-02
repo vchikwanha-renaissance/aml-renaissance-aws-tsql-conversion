@@ -59,7 +59,7 @@ def main():
             structural_definition = utils.get_structural_definition(mssql_code)
 
             # Update SCT variables and BIT data type
-            sct_code = utils.replace_variables(sct_code, structural_definition)
+            sct_code = utils.replace_variables(sct_code, structural_definition, file_name)
 
             # Initialize new code variable
             new_sct_code = sct_code
@@ -70,24 +70,20 @@ def main():
             # Process SCT code agent 
             process_sct_comments_agent_name = "agent-convert-sct-action-items"
             process_sct_comments_agent_id = "QEKGKPJV5J"
-            process_sct_comments_agent_alias_id = "NUTF4DRGCK"
+            process_sct_comments_agent_alias_id = "ARE2CTYZ8L"
 
 
             # Process SCT comment blocks
             for comment in comment_blocks:
                 action_item = comment_blocks[comment]
 
+                # Get T-SQL without comments
+                action_item_tsql = utils.extract_tsql_from_comment(action_item)
+
                 # Generate prompt for SCT comment block conversion
                 prompt_1 = f"""
-                    for context, the following comment block is a snippet of code that is in the {file_name} stored procedure:
-                    {action_item}
-
-                    Step by step:
-                    1. Use an internal monologue to describe what T-SQL expression is doing
-                    2. Think, step by step, and formulate PostgreSQL code that is the equivalent of the T-SQL
-                    3. Review the PostgreSQL code you have formulated and validate that it is doing what the T-SQL code is doing
-                    4. Carefully evaluate the code you have generated and look for improvements
-                    5. Present the PostgreSQL code that you recommend to replace the T-SQL code 
+                    for context, the following is a snippet of code that is in the {file_name} stored procedure:
+                    {action_item_tsql}
                     
                     Return the PostgreSQL version of the code snippet enclosed in <sql></sql> tags
                     """
@@ -102,15 +98,16 @@ def main():
                          
                 
                 # Extract XML tags from LLM response
-                llm_response = utils.extract_xml_tags(llm_response, action_item)
+                llm_response = utils.extract_xml_tags(llm_response, action_item_tsql)
             
 
                 # Update sct code with LLM generated SQL
                 try:
                     # Replace SCT comments with SQL from LLM
-                    new_sct_code = utils.replace_sct_code(new_sct_code, 
-                                                        llm_response, 
-                                                        process_sct_comments_agent_name)
+                    new_sct_code = utils.replace_sct_code(new_sct_code,
+                                                          llm_response, 
+                                                          process_sct_comments_agent_name,
+                                                          action_item)
 
                     # Write new code to file
                     utils.write_updated_code(new_sct_code, 

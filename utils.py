@@ -76,26 +76,37 @@ def get_structural_definition(sql_content):
                 input_params.append((param.group(1), param.group(2).strip()))
     
     # Define search pattern for variables and temp tables
-    variable_pattern = r'declare\s+@(\w+)\s+([\w(\)]+)'
+    variable_pattern = r'declare\s+@(\w+)\s+([\w(\)^table]+)'
     temp_table_pattern = r'create\s+table\s+#([\w]+)'
+    temp_table_pattern_2 = r'declare\s+@(\w+)\s+table\s'
 
     # Find all variables in the SQL file
     variables = re.findall(variable_pattern, sql_content)
 
     # Find all temp tables in the SQL file
     temp_tables = re.findall(temp_table_pattern, sql_content)
+    temp_tables_2 = re.findall(temp_table_pattern_2, sql_content)
+
+    temp_tables_w_prefix = []
+    for table in temp_tables:
+        temp_tables_w_prefix.append((table, '#'))
+
+    if len(temp_tables_2) >= 1:
+        for table in temp_tables_2:
+            temp_tables_w_prefix.append((table, '@'))
+        
 
     schema = {
         'Parameters': input_params,
         'Variables': variables,
-        'Temp Tables': temp_tables
+        'Temp Tables': temp_tables_w_prefix
     }
 
     return schema
 
 
 # Function to replace MSSQL parameters, variables and temp tables
-def replace_variables(sql_content, schema):
+def replace_variables(sql_content, schema, file_name):
 
     # Replace input parameters
     for param in schema['Parameters']:
@@ -107,14 +118,31 @@ def replace_variables(sql_content, schema):
         var_name = 'var_' + var[0]
         
         # replace SQL Server variables that were not converted by SCT
-        sql_content = sql_content.replace('@' + var[0], var_name)
+        if var[1].lower() != 'table':
+            sql_content = sql_content.replace('@' + var[0], var_name)
 
         if var[1].lower() == 'bit':
+            # Change parameter data type
             sql_content = sql_content.replace(var_name + ' NUMERIC(1, 0)', var_name + ' BOOLEAN')
 
+            # Change default value for parameter
+            sql_content = sql_content.replace(var_name + ' BOOLEAN DEFAULT 0', var_name + ' BOOLEAN DEFAULT FALSE')
+            sql_content = sql_content.replace(var_name + ' BOOLEAN DEFAULT 1', var_name + ' BOOLEAN DEFAULT TRUE')
+
+            # Change variable assignments to true or false
+            sql_content = sql_content.replace(var_name + ' := 1', var_name + ' := true')
+            sql_content = sql_content.replace(var_name + ' := 0', var_name + ' := false')
+
+            sql_content = sql_content.replace(var_name + ' = 1', var_name + ' = true')
+            sql_content = sql_content.replace(var_name + ' = 0', var_name + ' = false')
+
+    name_part = file_name.split(".")
     # Replace SQL Server temp table names
     for temp_table in schema['Temp Tables']:
-        sql_content = sql_content.replace('#' + temp_table, 't$' + temp_table.lower())
+        if temp_table[1] == '#':
+            sql_content = sql_content.replace('#' + temp_table[0], 't$' + temp_table[0].lower())
+        else:
+            sql_content = sql_content.replace('@' + temp_table[0], temp_table[0].lower() + '$' + name_part[0])
 
     return sql_content
 
@@ -172,6 +200,18 @@ def extract_dms_comments(sct_code):
 
     except ClientError as e:
         logger.error(f"Failed to extract DMS SC comment blocks: {e}")
+
+
+# Function to extract T-SQL from SCT comments
+def extract_tsql_from_comment(comment_text: str) -> str:
+   pattern =  r'/\*\s*\[(\d+)\s*-\s*Severity\s+(\w+)\s*-\s*([^\]]+)\](.*?)\*/'
+
+   matches = re.findall(pattern, comment_text, re.DOTALL)
+
+   for match in matches:   
+       tsql = match[3].strip()
+    
+   return tsql
 
 
 # Function to extract dynamic SQL expressions code
@@ -269,11 +309,11 @@ def extract_xml_tags(content, action_item):
         
 
 # Function to search and replace SCT comments
-def replace_sct_code(sct_code, llm_response, agent_name):
+def replace_sct_code(sct_code, llm_response, agent_name, action_item):
     # Check if LLM response contains SQL item
     if "sql" in llm_response:
         try:
-            sct_comment = llm_response["sct"]
+            sct_comment = action_item
             pg_sql = llm_response["sql"]
 
             pg_sql = f"""/* GENERATIVE AI CODE BELOW: {agent_name} */ {pg_sql}"""
