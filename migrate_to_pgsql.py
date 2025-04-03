@@ -166,7 +166,8 @@ def main():
                 # Replace dynamic SQL with LLM SQL
                 new_sct_code = utils.replace_sct_code(new_sct_code,
                                                     llm_response, 
-                                                    process_dynamic_sql_agent_name)
+                                                    process_dynamic_sql_agent_name,
+                                                    action_item)                
                 
                 # Write new code to file
                 utils.write_updated_code(new_sct_code, 
