@@ -70,7 +70,7 @@ def main():
             # Process SCT code agent 
             process_sct_comments_agent_name = "agent-convert-sct-action-items"
             process_sct_comments_agent_id = "QEKGKPJV5J"
-            process_sct_comments_agent_alias_id = "ARE2CTYZ8L"
+            process_sct_comments_agent_alias_id = "OC840SQHQ5"
 
 
             # Process SCT comment blocks
