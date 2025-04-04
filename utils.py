@@ -316,7 +316,7 @@ def replace_sct_code(sct_code, llm_response, agent_name, action_item):
             sct_comment = action_item
             pg_sql = llm_response["sql"]
 
-            pg_sql = f"""/* GENERATIVE AI CODE BELOW: {agent_name} */ {pg_sql}"""
+            pg_sql = f"""/* BEGIN GENERATIVE AI CODE BLOCK: {agent_name} */ {pg_sql}/* END GENERATIVE AI CODE BLOCK */"""
 
             # Replace SCT code with PostgreSQL comment
             sct_code = sct_code.replace(sct_comment, pg_sql)
@@ -347,10 +347,10 @@ def write_updated_code(new_code, file_name, agent_name):
 
             for line in new_code.split('\n'):
                 # Check if line contains GEN AI comment and get indentation spaces
-                gen_ai_comment = line.find(f"/* GENERATIVE AI CODE BELOW:")
+                gen_ai_comment = line.find(f"/* BEGIN GENERATIVE AI CODE BLOCK:")
 
                 # Check if line contains semicolon to identify end of block
-                end_of_block = line.find(";")
+                end_of_block = line.find("/* END GENERATIVE AI CODE BLOCK */")
                 
                 if  gen_ai_comment != -1:
                     # Set start of code block to true

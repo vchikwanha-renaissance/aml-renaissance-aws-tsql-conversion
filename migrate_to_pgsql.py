@@ -1,5 +1,6 @@
 import boto3
 import utils
+import time
 import logging
 
 from argparse import ArgumentParser
@@ -88,17 +89,29 @@ def main():
                     Return the PostgreSQL version of the code snippet enclosed in <sql></sql> tags
                     """
 
-                # Get Agent Response
-                llm_response = utils.prompt_llm(bedrock_agent_runtime, 
-                                                process_sct_comments_agent_name,
-                                                process_sct_comments_agent_id, 
-                                                process_sct_comments_agent_alias_id, 
-                                                session_id, 
-                                                prompt_1)
-                         
-                
-                # Extract XML tags from LLM response
-                llm_response = utils.extract_xml_tags(llm_response, action_item_tsql)
+                # Prompt the LLM up to 3 times if it does not provide SQL in the response
+                attempts = 0
+                while attempts < 3:
+                    # Get Agent Response
+                    llm_response = utils.prompt_llm(bedrock_agent_runtime, 
+                                                    process_sct_comments_agent_name,
+                                                    process_sct_comments_agent_id, 
+                                                    process_sct_comments_agent_alias_id, 
+                                                    session_id, 
+                                                    prompt_1)
+                            
+                    
+                    # Extract XML tags from LLM response
+                    llm_response = utils.extract_xml_tags(llm_response, action_item_tsql)
+
+                    try:
+                        sql = llm_response["sql"]
+                        break
+                    except KeyError as e:
+                        attempts += 1
+                        logger.info(f"LLM did not provice SQL for the following : {action_item_tsql}")
+                        logger.info(f"Retrying... (Attempt {attempts})")
+                        time.sleep(5)
             
 
                 # Update sct code with LLM generated SQL
@@ -135,7 +148,7 @@ def main():
             # Process dynamic SQL agent
             process_dynamic_sql_agent_name = "agent-analyze-dynamic-sql-v2"
             process_dynamic_sql_agent_id = "R8ZNIYI1EF"
-            process_dynamic_sql_agent_alias_id = "CJHDM6H7DA"
+            process_dynamic_sql_agent_alias_id = "LGITFGYAQR"
 
 
             for assignment in var_assignments:
@@ -146,33 +159,48 @@ def main():
                     The following code snippet is from the {file_name} stored procedure. Give me PostgreSQL 16 equivalent code for the following code snippet:
                     {action_item}
 
+                    Evaluate the code snippet and return whether it is a valid PostgreSQL expression or not in <valid></valid>. Use true or false to specify if it is valid or not.
                     Return the corrected PostgreSQL 16 version of the code snippet enclosed in <sql></sql> tags
 
-                    Thoroughly analyze the stored procedure, think it through, step by step. 
+                    Thoroughly analyze the code snippet, think it through, step by step. 
+                    Provide your feedback in XML tags!!!!
                     """
 
-
-                # Get Agent Response
-                llm_response = utils.prompt_llm(bedrock_agent_runtime,
-                                                process_dynamic_sql_agent_name, 
-                                                process_dynamic_sql_agent_id, 
-                                                process_dynamic_sql_agent_alias_id, 
-                                                session_id, 
-                                                prompt_2)
-
-                # Extract XML tags from LLM response
-                llm_response = utils.extract_xml_tags(llm_response, action_item)
-
-                # Replace dynamic SQL with LLM SQL
-                new_sct_code = utils.replace_sct_code(new_sct_code,
-                                                    llm_response, 
+                dynamic_sql_attempts = 0
+                while dynamic_sql_attempts < 3:
+                    
+                    # Get Agent Response
+                    llm_response = utils.prompt_llm(bedrock_agent_runtime,
                                                     process_dynamic_sql_agent_name,
-                                                    action_item)                
-                
-                # Write new code to file
-                utils.write_updated_code(new_sct_code, 
-                                        file_name, 
-                                        process_dynamic_sql_agent_name)
+                                                    process_dynamic_sql_agent_id,
+                                                    process_dynamic_sql_agent_alias_id,
+                                                    session_id,
+                                                    prompt_2)
+                        
+                    # Extract XML tags from LLM response
+                    llm_response = utils.extract_xml_tags(llm_response, action_item)
+
+                    if "valid" in llm_response:
+                        if llm_response["valid"] == "false":
+                            try:
+                                # Replace dynamic SQL with LLM SQL
+                                new_sct_code = utils.replace_sct_code(new_sct_code,
+                                                        llm_response, 
+                                                        process_dynamic_sql_agent_name,
+                                                        action_item)
+                                
+                                # Write new code to file
+                                utils.write_updated_code(new_sct_code, 
+                                            file_name, 
+                                            process_dynamic_sql_agent_name)
+                                
+                                break
+
+                            except KeyError as e:
+                                dynamic_sql_attempts += 1
+                                logger.info(f"LLM did not provice SQL for the following : {action_item}")
+                                logger.info(f"Retrying... (Attempt {dynamic_sql_attempts})")
+                                time.sleep(5)
 
 
             # Upload processed dynamic SQL code to s3
