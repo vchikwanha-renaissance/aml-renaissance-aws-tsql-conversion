@@ -59,6 +59,11 @@ def main():
             # Get structual definition from source SQL Server code i.e, input params, variables and temp tables
             structural_definition = utils.get_structural_definition(mssql_code)
 
+            # Analyze MSSQL code agent
+            analyze_mssql_code_agent_name = "agent-analyze-sql-server-code"
+            analyze_mssql_code_agent_id = "KZOGIITLJJ"
+            analyze_mssql_code_agent_alias_id = "GDMGUMATJY"
+            
             # Update SCT variables and BIT data type
             sct_code = utils.replace_variables(sct_code, structural_definition, file_name)
 
@@ -81,12 +86,24 @@ def main():
                 # Get T-SQL without comments
                 action_item_tsql = utils.extract_tsql_from_comment(action_item)
 
+                prompt_0 = f"""describe what the following code is doing: {action_item_tsql}"""
+                
+                code_description = utils.prompt_llm(bedrock_agent_runtime, 
+                                                    analyze_mssql_code_agent_name,
+                                                    analyze_mssql_code_agent_id, 
+                                                    analyze_mssql_code_agent_alias_id, 
+                                                    session_id, 
+                                                    prompt_0)
+            
+
                 # Generate prompt for SCT comment block conversion
                 prompt_1 = f"""
                     for context, the following is a snippet of code that is in the {file_name} stored procedure:
                     {action_item_tsql}
                     
                     Return the PostgreSQL version of the code snippet enclosed in <sql></sql> tags
+
+                    To guide you, the following is a description of what the T-SQL code is doing and what the PostgreSQL code must do as well: {code_description}
                     """
 
                 # Prompt the LLM up to 3 times if it does not provide SQL in the response
