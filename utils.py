@@ -32,14 +32,14 @@ def read_s3_file(s3_client, bucket_name, file_key):
 
     try:
         response = s3_client.get_object(Bucket=bucket_name, Key=file_key)
-        sct_code = response['Body'].read().decode('utf-8')
+        sql = response['Body'].read().decode('utf-8')
 
         logger.info(f"Successfully read SCT Code from S3: {bucket_name}/{file_key}")
 
         # Replace SQL Server ERROR_MESSAGE with SQLERRM
-        sct_code = sct_code.replace("error_catch$ERROR_MESSAGE", "SQLERRM")
+        sql = sql.replace("error_catch$ERROR_MESSAGE", "SQLERRM")
         
-        return sct_code
+        return sql
     
     except ClientError as e:
         logger.error(f"Error reading {bucket_name}/{file_key} from S3: {e}")
@@ -103,6 +103,38 @@ def get_structural_definition(sql_content):
     }
 
     return schema
+
+
+# Function to map SQL Server object names to PostgreSQL object names
+def map_object_names(schema, file_name):
+    parameters = {}
+    variables = {}
+    temp_tables = {}
+
+    for key in schema.keys():
+        if key == 'Parameters':
+            for param in schema[key]:
+                name = '@' + param[0]
+                parameters[name] = 'par_' + param[0].lower()
+        elif key == 'Variables':
+            for var in schema[key]:
+                name = '@' + var[0]
+                variables[name] = 'var_' + var[0]
+        elif key == 'Temp Tables':
+            for temp in schema[key]:
+                if temp[1] == '#':
+                    name = '#' + temp[0]
+                    temp_tables[name] = 't$' + temp[0].lower()
+                elif temp[1] == '@':
+                    name = '@' + temp[0]
+                    temp_tables[name] = temp[0].lower() + '$' + file_name.split(".")[0].lower()
+                
+    mapping = {}
+    mapping['Parameters'] = parameters
+    mapping['Variables'] = variables
+    mapping['Temp Tables'] = temp_tables
+
+    return mapping
 
 
 # Function to replace MSSQL parameters, variables and temp tables

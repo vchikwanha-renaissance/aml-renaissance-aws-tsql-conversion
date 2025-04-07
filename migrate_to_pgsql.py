@@ -59,6 +59,9 @@ def main():
             # Get structual definition from source SQL Server code i.e, input params, variables and temp tables
             structural_definition = utils.get_structural_definition(mssql_code)
 
+            # Get mapping of SQL Server object names to PostgreSQL object names
+            mapping = utils.map_object_names(structural_definition, file_name)
+
             # Analyze MSSQL code agent
             analyze_mssql_code_agent_name = "agent-analyze-sql-server-code"
             analyze_mssql_code_agent_id = "KZOGIITLJJ"
@@ -104,6 +107,8 @@ def main():
                     Return the PostgreSQL version of the code snippet enclosed in <sql></sql> tags
 
                     To guide you, the following is a description of what the T-SQL code is doing and what the PostgreSQL code must do as well: {code_description}
+
+                    Map SQL Server parameters, variables and temp tables to the PostgreSQL object names provided: {mapping}
                     """
 
                 # Prompt the LLM up to 3 times if it does not provide SQL in the response
