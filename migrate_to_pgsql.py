@@ -109,7 +109,7 @@ def main():
                         break
                     except KeyError as e:
                         attempts += 1
-                        logger.info(f"LLM did not provice SQL for the following : {action_item_tsql}")
+                        logger.info(f"LLM did not provide SQL for the following : {action_item_tsql}")
                         logger.info(f"Retrying... (Attempt {attempts})")
                         time.sleep(5)
             
@@ -128,7 +128,7 @@ def main():
                                             process_sct_comments_agent_name)
 
                 except Exception as e:
-                    logger.info(f"Agent response did not include sql for {action_item}: {e}")
+                    logger.info(f"Agent response did not include sql for {action_item_tsql}: {e}")
                     
                     continue  
                 
