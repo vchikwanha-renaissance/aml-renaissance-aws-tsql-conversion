@@ -198,7 +198,7 @@ def main():
 
                             except KeyError as e:
                                 dynamic_sql_attempts += 1
-                                logger.info(f"LLM did not provice SQL for the following : {action_item}")
+                                logger.info(f"LLM did not provide SQL for the following : {action_item}")
                                 logger.info(f"Retrying... (Attempt {dynamic_sql_attempts})")
                                 time.sleep(5)
 
