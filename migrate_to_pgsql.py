@@ -204,28 +204,28 @@ def main():
                     # Extract XML tags from LLM response
                     llm_response = utils.extract_xml_tags(llm_response, action_item)
 
-                    if "valid" in llm_response:
-                        if llm_response["valid"] == "false":
-                            try:
-                                # Replace dynamic SQL with LLM SQL
-                                new_sct_code = utils.replace_sct_code(new_sct_code,
-                                                        llm_response, 
-                                                        process_dynamic_sql_agent_name,
-                                                        action_item)
-                                
-                                # Write new code to file
-                                utils.write_updated_code(new_sct_code, 
-                                            file_name, 
-                                            process_dynamic_sql_agent_name)
-                                
-                                break
+                    try:
+                        valid = llm_response["valid"]
+                        break
+                    except KeyError as e:
+                        dynamic_sql_attempts += 1
+                        logger.info(f"LLM did not indicate if the following is a valid PostgreSQL expression : {action_item}")
+                        logger.info(f"Retrying... (Attempt {dynamic_sql_attempts})")
+                        time.sleep(5 * dynamic_sql_attempts)
+                        continue
 
-                            except KeyError as e:
-                                dynamic_sql_attempts += 1
-                                logger.info(f"LLM did not provide SQL for the following : {action_item}")
-                                logger.info(f"Retrying... (Attempt {dynamic_sql_attempts})")
-                                time.sleep(5 * dynamic_sql_attempts)
-
+                if "valid" in llm_response:
+                    if llm_response["valid"] == "false":
+                        # Replace dynamic SQL with LLM SQL
+                        new_sct_code = utils.replace_sct_code(new_sct_code,
+                                                llm_response, 
+                                                process_dynamic_sql_agent_name,
+                                                action_item)
+                        
+                        # Write new code to file
+                        utils.write_updated_code(new_sct_code, 
+                                    file_name, 
+                                    process_dynamic_sql_agent_name)
 
             # Upload processed dynamic SQL code to s3
             utils.upload_s3_file(s3_client, 
