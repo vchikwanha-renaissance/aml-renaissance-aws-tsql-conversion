@@ -82,6 +82,11 @@ def main():
             process_sct_comments_agent_alias_id = "OC840SQHQ5"
 
 
+            # Write SCT code to file
+            utils.write_updated_code(new_sct_code, 
+                                    file_name, 
+                                    process_sct_comments_agent_name)
+            
             # Process SCT comment blocks
             for comment in comment_blocks:
                 action_item = comment_blocks[comment]
@@ -133,7 +138,7 @@ def main():
                         attempts += 1
                         logger.info(f"LLM did not provide SQL for the following : {action_item_tsql}")
                         logger.info(f"Retrying... (Attempt {attempts})")
-                        time.sleep(5)
+                        time.sleep(5 * attempts)
             
 
                 # Update sct code with LLM generated SQL
