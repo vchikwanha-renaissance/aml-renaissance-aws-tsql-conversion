@@ -184,6 +184,8 @@ def main():
                     Evaluate the code snippet and return whether it is a valid PostgreSQL expression or not in <valid></valid>. Use true or false to specify if it is valid or not.
                     Return the corrected PostgreSQL 16 version of the code snippet enclosed in <sql></sql> tags
 
+                    Map SQL Server parameters, variables and temp tables to the PostgreSQL object names provided: {mapping}
+
                     Thoroughly analyze the code snippet, think it through, step by step. 
                     Provide your feedback in XML tags!!!!
                     """
@@ -222,7 +224,7 @@ def main():
                                 dynamic_sql_attempts += 1
                                 logger.info(f"LLM did not provide SQL for the following : {action_item}")
                                 logger.info(f"Retrying... (Attempt {dynamic_sql_attempts})")
-                                time.sleep(5)
+                                time.sleep(5 * dynamic_sql_attempts)
 
 
             # Upload processed dynamic SQL code to s3

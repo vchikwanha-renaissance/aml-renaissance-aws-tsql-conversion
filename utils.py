@@ -38,6 +38,7 @@ def read_s3_file(s3_client, bucket_name, file_key):
 
         # Replace SQL Server ERROR_MESSAGE with SQLERRM
         sql = sql.replace("error_catch$ERROR_MESSAGE", "SQLERRM")
+        sql = sql.replace("dbo", "public")
         
         return sql
     
@@ -130,6 +131,7 @@ def map_object_names(schema, file_name):
                     temp_tables[name] = temp[0].lower() + '$' + file_name.split(".")[0].lower()
                 
     mapping = {}
+    mapping['DB Schema'] = {'dbo': 'public'}
     mapping['Parameters'] = parameters
     mapping['Variables'] = variables
     mapping['Temp Tables'] = temp_tables
@@ -311,7 +313,7 @@ def prompt_llm(bedrock_agent_runtime, agent_name, agent_id, agent_alias_id, sess
             logger.error(f"Error invoking Bedrock agent {agent_name}: {e}")
             logger.info(f"Error submitting the following prompt: {prompt}")
             logger.info(f"Retrying... (Attempt {attempts})")
-            time.sleep(5)
+            time.sleep(5 * attempts)
     
 
 
