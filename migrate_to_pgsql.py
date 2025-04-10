@@ -65,7 +65,7 @@ def main():
             # Analyze MSSQL code agent
             analyze_mssql_code_agent_name = "agent-analyze-sql-server-code"
             analyze_mssql_code_agent_id = "KZOGIITLJJ"
-            analyze_mssql_code_agent_alias_id = "GDMGUMATJY"
+            analyze_mssql_code_agent_alias_id = "NAZGHRN4GE"
             
             # Update SCT variables and BIT data type
             sct_code = utils.replace_variables(sct_code, structural_definition, file_name)
@@ -79,7 +79,7 @@ def main():
             # Process SCT code agent 
             process_sct_comments_agent_name = "agent-convert-sct-action-items"
             process_sct_comments_agent_id = "QEKGKPJV5J"
-            process_sct_comments_agent_alias_id = "OC840SQHQ5"
+            process_sct_comments_agent_alias_id = "6MIRMIJRNF"
 
 
             # Write SCT code to file
@@ -175,7 +175,7 @@ def main():
             # Process dynamic SQL agent
             process_dynamic_sql_agent_name = "agent-analyze-dynamic-sql-v2"
             process_dynamic_sql_agent_id = "R8ZNIYI1EF"
-            process_dynamic_sql_agent_alias_id = "LGITFGYAQR"
+            process_dynamic_sql_agent_alias_id = "NCJLOYGA65"
 
 
             for assignment in var_assignments:
@@ -217,7 +217,7 @@ def main():
                         logger.info(f"LLM did not indicate if the following is a valid PostgreSQL expression : {action_item}")
                         logger.info(f"Retrying... (Attempt {dynamic_sql_attempts})")
                         time.sleep(5 * dynamic_sql_attempts)
-                        continue
+
 
                 if "valid" in llm_response:
                     if llm_response["valid"] == "false":
