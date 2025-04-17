@@ -63,9 +63,9 @@ def main():
             mapping = utils.map_object_names(structural_definition, file_name)
 
             # Analyze MSSQL code agent
-            analyze_mssql_code_agent_name = "agent-analyze-sql-server-code"
-            analyze_mssql_code_agent_id = "KZOGIITLJJ"
-            analyze_mssql_code_agent_alias_id = "NAZGHRN4GE"
+            analyze_mssql_code_agent_name = "agent-convert-sqlserver-postgresql-v2"
+            analyze_mssql_code_agent_id = "76DTMHPMK8"
+            analyze_mssql_code_agent_alias_id = "ZNYWDVBAKA"
             
             # Update SCT variables and BIT data type
             sct_code = utils.replace_variables(sct_code, structural_definition, file_name)
@@ -77,9 +77,9 @@ def main():
             comment_blocks = utils.extract_dms_comments(sct_code)
 
             # Process SCT code agent 
-            process_sct_comments_agent_name = "agent-convert-sct-action-items"
-            process_sct_comments_agent_id = "QEKGKPJV5J"
-            process_sct_comments_agent_alias_id = "6MIRMIJRNF"
+            process_sct_comments_agent_name = "agent-convert-sqlserver-postgresql-v2"
+            process_sct_comments_agent_id = "76DTMHPMK8"
+            process_sct_comments_agent_alias_id = "ZNYWDVBAKA"
 
 
             # Write SCT code to file
@@ -173,9 +173,9 @@ def main():
 
 
             # Process dynamic SQL agent
-            process_dynamic_sql_agent_name = "agent-analyze-dynamic-sql-v2"
-            process_dynamic_sql_agent_id = "R8ZNIYI1EF"
-            process_dynamic_sql_agent_alias_id = "NCJLOYGA65"
+            process_dynamic_sql_agent_name = "agent-convert-sqlserver-postgresql-v2"
+            process_dynamic_sql_agent_id = "76DTMHPMK8"
+            process_dynamic_sql_agent_alias_id = "ZNYWDVBAKA"
 
 
             for assignment in var_assignments:
